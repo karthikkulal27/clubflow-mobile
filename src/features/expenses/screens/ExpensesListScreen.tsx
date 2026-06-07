@@ -78,9 +78,12 @@ function ExpenseCard({
       </View>
 
       {item.description && (
-        <Text style={[styles.description, { color: theme.text.secondary }]} numberOfLines={2}>
-          {item.description}
-        </Text>
+        <View style={styles.reasonRow}>
+          <Text style={[styles.reasonLabel, { color: theme.text.tertiary }]}>Reason: </Text>
+          <Text style={[styles.reasonText, { color: theme.text.secondary }]} numberOfLines={2}>
+            {item.description}
+          </Text>
+        </View>
       )}
     </Card>
   );
@@ -204,5 +207,7 @@ const styles = StyleSheet.create({
   amountBlock: { alignItems: 'flex-end', gap: spacing[2] },
   amount: { fontSize: fontSize.base, fontWeight: fontWeight.bold },
   deleteBtn: { padding: spacing[1] },
-  description: { fontSize: fontSize.xs, marginTop: spacing[2], lineHeight: 18 },
+  reasonRow: { flexDirection: 'row', alignItems: 'flex-start', marginTop: spacing[2] },
+  reasonLabel: { fontSize: fontSize.xs, fontWeight: fontWeight.medium, flexShrink: 0 },
+  reasonText: { fontSize: fontSize.xs, flex: 1, lineHeight: 18 },
 });

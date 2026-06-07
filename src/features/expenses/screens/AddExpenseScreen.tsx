@@ -71,7 +71,7 @@ export function AddExpenseScreen({ onBack, onSuccess }: AddExpenseScreenProps) {
         title: data.title,
         amount: Number(data.amount),
         category: selectedCategory ?? undefined,
-        expenseDate: data.expenseDate,
+        expenseDate: data.expenseDate + 'T00:00:00.000Z',
         description: data.description || undefined,
       }),
     onSuccess: () => {
@@ -200,8 +200,8 @@ export function AddExpenseScreen({ onBack, onSuccess }: AddExpenseScreenProps) {
           name="description"
           render={({ field: { value, onChange, onBlur } }) => (
             <Input
-              label="Notes (optional)"
-              placeholder="Additional details..."
+              label="Reason (optional)"
+              placeholder="e.g. Monthly ground rent payment"
               leftIcon="document-text-outline"
               autoCapitalize="sentences"
               multiline

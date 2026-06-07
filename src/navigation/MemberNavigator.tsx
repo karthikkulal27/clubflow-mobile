@@ -10,6 +10,7 @@ import { EventsListScreen } from '../features/events/screens/EventsListScreen';
 import { EventDetailScreen } from '../features/events/screens/EventDetailScreen';
 import { AnnouncementsScreen } from '../features/announcements/screens/AnnouncementsScreen';
 import { NotificationsScreen } from '../features/notifications/screens/NotificationsScreen';
+import { ExpensesListScreen } from '../features/expenses/screens/ExpensesListScreen';
 import { MoreScreen } from '../features/dashboard/screens/MoreScreen';
 import { ProfileScreen } from '../features/profile/screens/ProfileScreen';
 import { useTheme } from '../hooks/useTheme';
@@ -37,6 +38,23 @@ function EventsNavigator() {
         )}
       </EventsStack.Screen>
     </EventsStack.Navigator>
+  );
+}
+
+// Finance stack: overview + expenses (read-only for members)
+const FinanceStack = createStackNavigator();
+function FinanceNavigator() {
+  return (
+    <FinanceStack.Navigator screenOptions={{ headerShown: false }}>
+      <FinanceStack.Screen name="FinanceOverview">
+        {({ navigation }) => (
+          <FinanceScreen onExpenses={() => navigation.navigate('Expenses')} />
+        )}
+      </FinanceStack.Screen>
+      <FinanceStack.Screen name="Expenses">
+        {() => <ExpensesListScreen />}
+      </FinanceStack.Screen>
+    </FinanceStack.Navigator>
   );
 }
 
@@ -95,7 +113,7 @@ export function MemberNavigator() {
     >
       <Tab.Screen name="Home" component={MemberDashboardScreen} />
       <Tab.Screen name="Payments" component={MyPaymentsScreen} />
-      <Tab.Screen name="Finance" component={FinanceScreen} />
+      <Tab.Screen name="Finance" component={FinanceNavigator} />
       <Tab.Screen name="Events" component={EventsNavigator} />
       <Tab.Screen name="More" component={MoreNavigator} />
     </Tab.Navigator>

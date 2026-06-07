@@ -76,9 +76,10 @@ function MemberPaymentRow({ item, isAdmin, onMarkPaid }: {
 interface FinanceScreenProps {
   onManagePricing?: () => void;
   onSpecialCollections?: () => void;
+  onExpenses?: () => void;
 }
 
-export function FinanceScreen({ onManagePricing, onSpecialCollections }: FinanceScreenProps) {
+export function FinanceScreen({ onManagePricing, onSpecialCollections, onExpenses }: FinanceScreenProps) {
   const { theme } = useTheme();
   const { isAdmin } = useAuth();
   const now = new Date();
@@ -86,7 +87,7 @@ export function FinanceScreen({ onManagePricing, onSpecialCollections }: Finance
   const [year] = useState(now.getFullYear());
   const [activeTab, setActiveTab] = useState<Tab>('paid');
 
-  const { data: payments, isLoading } = usePaymentsList(month, year);
+  const { data: payments, isLoading, isError } = usePaymentsList(month, year);
   const { data: stats } = usePaymentStats(month, year);
   const markPaid = useMarkPaymentPaid();
 
@@ -161,6 +162,21 @@ export function FinanceScreen({ onManagePricing, onSpecialCollections }: Finance
         initialNumToRender={15}
         ListHeaderComponent={
           <>
+            {/* Expenses shortcut */}
+            {onExpenses && (
+              <TouchableOpacity
+                style={[styles.expensesShortcut, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}
+                onPress={onExpenses}
+                activeOpacity={0.75}
+              >
+                <View style={[styles.expensesIcon, { backgroundColor: theme.dangerLight }]}>
+                  <Ionicons name="receipt-outline" size={18} color={theme.danger} />
+                </View>
+                <Text style={[styles.expensesLabel, { color: theme.text.primary }]}>Club Expenses</Text>
+                <Ionicons name="chevron-forward" size={16} color={theme.text.tertiary} />
+              </TouchableOpacity>
+            )}
+
             {/* Balance Card */}
             {stats && (
               <LinearGradient
@@ -288,13 +304,13 @@ export function FinanceScreen({ onManagePricing, onSpecialCollections }: Finance
         }
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={
-          isLoading ? (
+          isLoading && !isError ? (
             <ActivityIndicator size="large" color={theme.primary} style={{ marginTop: spacing[8] }} />
           ) : (
             <EmptyState
               icon={activeTab === 'paid' ? 'checkmark-circle-outline' : 'time-outline'}
-              title={activeTab === 'paid' ? 'No payments yet' : 'Everyone has paid!'}
-              subtitle={activeTab === 'paid' ? 'Payments will appear here once received' : 'All members have cleared their dues'}
+              title={activeTab === 'paid' ? 'No payments yet' : 'No dues scheduled'}
+              subtitle={activeTab === 'paid' ? 'Payments will appear here once received' : 'Create a dues schedule to generate payments for this month'}
             />
           )
         }
@@ -404,4 +420,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   markPaidBtnText: { fontSize: fontSize.xs, fontWeight: fontWeight.semibold },
+  expensesShortcut: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing[3],
+    marginHorizontal: spacing[5],
+    marginTop: spacing[4],
+    padding: spacing[4],
+    borderRadius: radius.xl,
+    borderWidth: 1,
+  },
+  expensesIcon: { width: 36, height: 36, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center' },
+  expensesLabel: { flex: 1, fontSize: fontSize.sm, fontWeight: fontWeight.semibold },
 });

@@ -99,6 +99,7 @@ function FinanceNavigator() {
       <FinanceStack.Screen name="FinanceOverview">
         {({ navigation }) => (
           <FinanceScreen
+            onExpenses={() => navigation.navigate('Expenses')}
             onManagePricing={() => navigation.navigate('DuesPlans')}
             onSpecialCollections={() => navigation.navigate('SpecialCollections')}
           />

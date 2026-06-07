@@ -145,6 +145,8 @@ export function useCreateDuesPlan() {
       createDuesPlanApi(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dues-plans'] });
+      queryClient.invalidateQueries({ queryKey: ['payments'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
     },
   });
 }
@@ -156,6 +158,8 @@ export function useDeleteDuesPlan() {
     mutationFn: (planId: string) => deleteDuesPlanApi(planId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dues-plans'] });
+      queryClient.invalidateQueries({ queryKey: ['payments'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
     },
   });
 }

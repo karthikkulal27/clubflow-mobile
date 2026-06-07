@@ -193,6 +193,15 @@ export interface AppNotification {
 export interface AdminDashboard {
   role: 'ADMIN';
   currentMonth: { month: number; year: number };
+  currentDue: {
+    id: string;
+    amount: number;
+    status: PaymentStatus;
+    paidAt: string | null;
+    currency: string;
+    month: number;
+    year: number;
+  } | null;
   stats: {
     totalMembers: number;
     paidCount: number;

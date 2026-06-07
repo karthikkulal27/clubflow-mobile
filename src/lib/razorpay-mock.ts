@@ -1,4 +1,6 @@
-// Mock for Expo Go — react-native-razorpay requires a dev build
+// Mock for Expo Go — react-native-razorpay requires a dev build.
+// In __DEV__ mode usePayNow bypasses this entirely and calls /mock-pay directly,
+// so this module is only here to satisfy the import and avoid a crash.
 import { Alert } from 'react-native';
 
 interface RazorpaySuccessData {
@@ -12,8 +14,8 @@ const RazorpayCheckout = {
     return new Promise((_resolve, reject) => {
       Alert.alert(
         'Payment Unavailable',
-        'Razorpay requires a development build. Use "eas build --profile development" to test payments.',
-        [{ text: 'OK', onPress: () => reject(new Error('Expo Go — payment not supported')) }],
+        'Razorpay requires a development build. Use "eas build --profile development" to test real payments.',
+        [{ text: 'OK', onPress: () => reject(new Error('Razorpay not available in Expo Go')) }],
       );
     });
   },

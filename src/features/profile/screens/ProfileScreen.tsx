@@ -15,6 +15,7 @@ import { Card } from '../../../components/ui/Card';
 import { Badge } from '../../../components/ui/Badge';
 import { Input } from '../../../components/ui/Input';
 import { Button } from '../../../components/ui/Button';
+import { DatePickerInput } from '../../../components/ui/DatePickerInput';
 import { useAuth } from '../../../hooks/useAuth';
 import { useAuthStore } from '../../../store/auth.store';
 import { useTheme } from '../../../hooks/useTheme';
@@ -260,9 +261,13 @@ export function ProfileScreen({ onBack }: ProfileScreenProps) {
             <Controller
               control={control}
               name="dateOfBirth"
-              render={({ field: { value, onChange, onBlur } }) => (
-                <Input label="Date of Birth (YYYY-MM-DD, optional)" value={value} onChangeText={onChange}
-                  onBlur={onBlur} error={errors.dateOfBirth?.message} leftIcon="calendar-outline" />
+              render={({ field: { value, onChange } }) => (
+                <DatePickerInput
+                  label="Date of Birth (optional)"
+                  value={value ?? ''}
+                  onChangeText={onChange}
+                  error={errors.dateOfBirth?.message}
+                />
               )}
             />
 

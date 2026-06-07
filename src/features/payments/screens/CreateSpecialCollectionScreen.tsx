@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView,
   KeyboardAvoidingView, Platform, TouchableOpacity,
@@ -10,6 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import Toast from 'react-native-toast-message';
 import { Input } from '../../../components/ui/Input';
 import { Button } from '../../../components/ui/Button';
+import { DatePickerInput } from '../../../components/ui/DatePickerInput';
 import { useTheme } from '../../../hooks/useTheme';
 import { fontSize, fontWeight } from '../../../theme/typography';
 import { spacing, radius } from '../../../theme/spacing';
@@ -23,17 +24,10 @@ const schema = z.object({
     (v) => !isNaN(Number(v)) && Number(v) > 0 && Number(v) <= 100000,
     'Enter a valid amount (1–1,00,000)',
   ),
-  dueDay: z.string().min(1, 'Pick a due date').refine(
-    (v) => !isNaN(Number(v)) && Number(v) >= 1 && Number(v) <= 31,
-    'Enter a day between 1 and 31',
-  ),
 });
 
 type FormData = z.infer<typeof schema>;
 
-function daysInMonth(month: number, year: number): number {
-  return new Date(year, month, 0).getDate();
-}
 
 interface CreateSpecialCollectionScreenProps {
   onBack: () => void;
@@ -46,32 +40,24 @@ export function CreateSpecialCollectionScreen({ onBack, onSuccess }: CreateSpeci
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth() + 1);
+  const [dueDate, setDueDate] = useState('');
+  const [dueDateError, setDueDateError] = useState('');
 
-  const { control, handleSubmit, watch, formState: { errors } } = useForm<FormData>({
+  const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { label: '', amount: '', dueDay: '' },
+    defaultValues: { label: '', amount: '' },
   });
 
-  const dueDayValue = watch('dueDay');
-  const maxDay = useMemo(() => daysInMonth(month, year), [month, year]);
-  const dueDayNum = Number(dueDayValue);
-  const showDuePreview = dueDayValue.length > 0 && dueDayNum >= 1 && dueDayNum <= maxDay;
-
   const onSubmit = (data: FormData) => {
-    const day = Number(data.dueDay);
-    if (day > maxDay) {
-      Toast.show({
-        type: 'error',
-        text1: 'Invalid due date',
-        text2: `${MONTHS[month - 1]} ${year} has only ${maxDay} days`,
-      });
+    if (!dueDate) {
+      setDueDateError('Select a due date');
       return;
     }
-
-    const dueDate = new Date(year, month - 1, day, 12, 0, 0);
+    setDueDateError('');
+    const dueDateObj = new Date(`${dueDate}T12:00:00`);
 
     createCollection.mutate(
-      { label: data.label, amount: Number(data.amount), month, year, dueDate: dueDate.toISOString() },
+      { label: data.label, amount: Number(data.amount), month, year, dueDate: dueDateObj.toISOString() },
       {
         onSuccess: (created) => {
           Toast.show({
@@ -187,28 +173,14 @@ export function CreateSpecialCollectionScreen({ onBack, onSuccess }: CreateSpeci
           </View>
         </View>
 
-        <Controller
-          control={control}
-          name="dueDay"
-          render={({ field: { value, onChange, onBlur } }) => (
-            <Input
-              label={`Due date — day of ${MONTHS[month - 1]} (1–${maxDay})`}
-              placeholder="e.g. 25"
-              leftIcon="calendar-outline"
-              keyboardType="number-pad"
-              maxLength={2}
-              value={value}
-              onChangeText={onChange}
-              onBlur={onBlur}
-              error={errors.dueDay?.message}
-            />
-          )}
+        <DatePickerInput
+          label="Due date"
+          value={dueDate}
+          onChangeText={(v) => { setDueDate(v); setDueDateError(''); }}
+          error={dueDateError}
+          minYear={now.getFullYear()}
+          maxYear={now.getFullYear() + 2}
         />
-        {showDuePreview && (
-          <Text style={[styles.hint, { color: theme.text.tertiary }]}>
-            Members will see this as due by {dueDayNum} {MONTHS[month - 1]} {year}.
-          </Text>
-        )}
 
         <Button
           title="Create & Bill Members"

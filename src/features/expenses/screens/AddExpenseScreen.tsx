@@ -11,6 +11,7 @@ import { Ionicons } from '@expo/vector-icons';
 import Toast from 'react-native-toast-message';
 import { Input } from '../../../components/ui/Input';
 import { Button } from '../../../components/ui/Button';
+import { DatePickerInput } from '../../../components/ui/DatePickerInput';
 import { useTheme } from '../../../hooks/useTheme';
 import { fontSize, fontWeight } from '../../../theme/typography';
 import { spacing, radius } from '../../../theme/spacing';
@@ -29,8 +30,6 @@ const CATEGORIES = [
 
 type Category = typeof CATEGORIES[number]['key'];
 
-const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-
 const schema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters'),
   amount: z.string().min(1, 'Amount is required').refine(
@@ -38,7 +37,7 @@ const schema = z.object({
     'Enter a valid amount',
   ),
   category: z.string().optional(),
-  expenseDate: z.string().regex(dateRegex, 'Format: YYYY-MM-DD'),
+  expenseDate: z.string().min(1, 'Select a date'),
   description: z.string().optional(),
 });
 
@@ -174,23 +173,13 @@ export function AddExpenseScreen({ onBack, onSuccess }: AddExpenseScreenProps) {
         <Controller
           control={control}
           name="expenseDate"
-          render={({ field: { value, onChange, onBlur } }) => (
-            <Input
+          render={({ field: { value, onChange } }) => (
+            <DatePickerInput
               label="Date"
-              placeholder="YYYY-MM-DD"
-              leftIcon="calendar-outline"
-              keyboardType="number-pad"
-              maxLength={10}
               value={value}
-              onChangeText={(t) => {
-                const digits = t.replace(/\D/g, '');
-                let formatted = digits;
-                if (digits.length > 4) formatted = `${digits.slice(0, 4)}-${digits.slice(4)}`;
-                if (digits.length > 6) formatted = `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6)}`;
-                onChange(formatted);
-              }}
-              onBlur={onBlur}
+              onChangeText={onChange}
               error={errors.expenseDate?.message}
+              minYear={2020}
             />
           )}
         />

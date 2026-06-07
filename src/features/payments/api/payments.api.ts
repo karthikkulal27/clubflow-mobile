@@ -57,3 +57,8 @@ export async function markPaymentPaidApi(paymentId: string): Promise<Payment> {
   const { data } = await api.patch<ApiResponse<Payment>>(`/payments/${paymentId}/mark-paid`);
   return data.data;
 }
+
+export async function mockPayApi(paymentId: string): Promise<Payment> {
+  const { data } = await api.post<ApiResponse<Payment>>(`/payments/${paymentId}/mock-pay`);
+  return data.data;
+}

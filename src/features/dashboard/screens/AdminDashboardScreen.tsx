@@ -8,7 +8,9 @@ import { Card } from '../../../components/ui/Card';
 import { Avatar } from '../../../components/ui/Avatar';
 import { SkeletonCard } from '../../../components/ui/Skeleton';
 import { BalanceCard } from '../components/BalanceCard';
+import { PaymentStatusCard } from '../components/PaymentStatusCard';
 import { useDashboard } from '../hooks/useDashboard';
+import { usePayNow } from '../../payments/hooks/usePayments';
 import { useAuth } from '../../../hooks/useAuth';
 import { useTheme } from '../../../hooks/useTheme';
 import { useAuthStore } from '../../../store/auth.store';
@@ -24,8 +26,14 @@ export function AdminDashboardScreen() {
   const { user } = useAuth();
   const clearAuth = useAuthStore((s) => s.clearAuth);
   const { data, isLoading, refetch, isRefetching } = useDashboard();
+  const payNow = usePayNow();
 
   const dashboard = data as AdminDashboard | undefined;
+
+  const handlePayNow = () => {
+    const paymentId = dashboard?.currentDue?.id;
+    if (paymentId) payNow.mutate(paymentId);
+  };
 
   const handleLogout = () => {
     Alert.alert('Sign Out', 'Are you sure?', [
@@ -63,6 +71,9 @@ export function AdminDashboardScreen() {
         </>
       ) : dashboard ? (
         <>
+          {/* Admin's own due */}
+          <PaymentStatusCard currentDue={dashboard.currentDue} onPayNow={handlePayNow} />
+
           {/* Balance Card */}
           <BalanceCard
             totalCollection={dashboard.stats.totalCollection}

@@ -8,6 +8,7 @@ import {
   createOrderApi,
   verifyPaymentApi,
   markPaymentPaidApi,
+  mockPayApi,
 } from '../api/payments.api';
 import { getDuesPlansApi, createDuesPlanApi, deleteDuesPlanApi } from '../api/dues-plans.api';
 import {
@@ -48,6 +49,11 @@ export function usePayNow() {
 
   return useMutation({
     mutationFn: async (paymentId: string) => {
+      // In dev (Expo Go), bypass Razorpay — call the mock-pay endpoint directly
+      if (__DEV__) {
+        return mockPayApi(paymentId);
+      }
+
       const order = await createOrderApi(paymentId);
 
       const options = {

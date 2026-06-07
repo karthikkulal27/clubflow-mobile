@@ -11,21 +11,20 @@ import { Ionicons } from '@expo/vector-icons';
 import Toast from 'react-native-toast-message';
 import { Input } from '../../../components/ui/Input';
 import { Button } from '../../../components/ui/Button';
+import { DatePickerInput } from '../../../components/ui/DatePickerInput';
+import { TimePickerInput } from '../../../components/ui/DatePickerInput';
 import { useTheme } from '../../../hooks/useTheme';
 import { fontSize, fontWeight } from '../../../theme/typography';
 import { spacing, radius } from '../../../theme/spacing';
 import { createEventApi } from '../api/events.api';
 
-const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-const timeRegex = /^\d{2}:\d{2}$/;
-
 const schema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters'),
   location: z.string().optional(),
   description: z.string().optional(),
-  date: z.string().regex(dateRegex, 'Format: YYYY-MM-DD'),
-  startTime: z.string().regex(timeRegex, 'Format: HH:MM (24h)'),
-  endTime: z.string().regex(timeRegex, 'Format: HH:MM (24h)').optional().or(z.literal('')),
+  date: z.string().min(1, 'Select a date'),
+  startTime: z.string().min(1, 'Select a start time'),
+  endTime: z.string().optional(),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -53,8 +52,8 @@ export function CreateEventScreen({ onBack, onSuccess }: CreateEventScreenProps)
 
   const mutation = useMutation({
     mutationFn: (data: FormData) => {
-      const startAt = `${data.date}T${data.startTime}:00`;
-      const endAt = data.endTime ? `${data.date}T${data.endTime}:00` : undefined;
+      const startAt = `${data.date}T${data.startTime}:00.000Z`;
+      const endAt = data.endTime ? `${data.date}T${data.endTime}:00.000Z` : undefined;
       return createEventApi({
         title: data.title,
         description: data.description || undefined,
@@ -134,23 +133,12 @@ export function CreateEventScreen({ onBack, onSuccess }: CreateEventScreenProps)
           <Controller
             control={control}
             name="date"
-            render={({ field: { value, onChange, onBlur } }) => (
-              <Input
-                placeholder="YYYY-MM-DD"
-                leftIcon="calendar-outline"
-                keyboardType="number-pad"
-                maxLength={10}
+            render={({ field: { value, onChange } }) => (
+              <DatePickerInput
                 value={value}
-                onChangeText={(t) => {
-                  // auto-insert hyphens
-                  const digits = t.replace(/\D/g, '');
-                  let formatted = digits;
-                  if (digits.length > 4) formatted = `${digits.slice(0, 4)}-${digits.slice(4)}`;
-                  if (digits.length > 6) formatted = `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6)}`;
-                  onChange(formatted);
-                }}
-                onBlur={onBlur}
+                onChangeText={onChange}
                 error={errors.date?.message}
+                minYear={new Date().getFullYear() - 1}
               />
             )}
           />
@@ -160,20 +148,11 @@ export function CreateEventScreen({ onBack, onSuccess }: CreateEventScreenProps)
               <Controller
                 control={control}
                 name="startTime"
-                render={({ field: { value, onChange, onBlur } }) => (
-                  <Input
+                render={({ field: { value, onChange } }) => (
+                  <TimePickerInput
                     label="Start Time"
-                    placeholder="HH:MM"
-                    leftIcon="time-outline"
-                    keyboardType="number-pad"
-                    maxLength={5}
                     value={value}
-                    onChangeText={(t) => {
-                      const digits = t.replace(/\D/g, '');
-                      const formatted = digits.length > 2 ? `${digits.slice(0, 2)}:${digits.slice(2)}` : digits;
-                      onChange(formatted);
-                    }}
-                    onBlur={onBlur}
+                    onChangeText={onChange}
                     error={errors.startTime?.message}
                   />
                 )}
@@ -184,20 +163,11 @@ export function CreateEventScreen({ onBack, onSuccess }: CreateEventScreenProps)
               <Controller
                 control={control}
                 name="endTime"
-                render={({ field: { value, onChange, onBlur } }) => (
-                  <Input
+                render={({ field: { value, onChange } }) => (
+                  <TimePickerInput
                     label="End Time (optional)"
-                    placeholder="HH:MM"
-                    leftIcon="time-outline"
-                    keyboardType="number-pad"
-                    maxLength={5}
-                    value={value}
-                    onChangeText={(t) => {
-                      const digits = t.replace(/\D/g, '');
-                      const formatted = digits.length > 2 ? `${digits.slice(0, 2)}:${digits.slice(2)}` : digits;
-                      onChange(formatted);
-                    }}
-                    onBlur={onBlur}
+                    value={value ?? ''}
+                    onChangeText={onChange}
                     error={errors.endTime?.message}
                   />
                 )}

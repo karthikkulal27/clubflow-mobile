@@ -9,6 +9,7 @@ import { BalanceCard } from '../components/BalanceCard';
 import { PaymentStatusCard } from '../components/PaymentStatusCard';
 import { useDashboard } from '../hooks/useDashboard';
 import { useMember } from '../../members/hooks/useMembers';
+import { usePayNow } from '../../payments/hooks/usePayments';
 import { useAuth } from '../../../hooks/useAuth';
 import { useTheme } from '../../../hooks/useTheme';
 import { useAuthStore } from '../../../store/auth.store';
@@ -27,6 +28,7 @@ export function MemberDashboardScreen() {
   const clearAuth = useAuthStore((s) => s.clearAuth);
   const { data, isLoading, refetch, isRefetching } = useDashboard();
   const { data: memberProfile } = useMember(user?.id ?? '');
+  const payNow = usePayNow();
   const [showNudge, setShowNudge] = useState(!nudgeDismissedThisSession);
 
   const profileCompletion = memberProfile?.profileCompletion ?? 0;
@@ -46,8 +48,8 @@ export function MemberDashboardScreen() {
   };
 
   const handlePayNow = () => {
-    // Navigate to payment screen — wired in Phase 5
-    Alert.alert('Pay Now', 'Razorpay integration coming in Phase 5');
+    const paymentId = (data as MemberDashboard | undefined)?.currentDue?.id;
+    if (paymentId) payNow.mutate(paymentId);
   };
 
   return (

@@ -11,6 +11,7 @@ import Toast from 'react-native-toast-message';
 import { Input } from '../../../components/ui/Input';
 import { Button } from '../../../components/ui/Button';
 import { AvatarPicker } from '../../../components/ui/AvatarPicker';
+import { DatePickerInput } from '../../../components/ui/DatePickerInput';
 import { useMember, useUpdateMember } from '../hooks/useMembers';
 import { useTheme } from '../../../hooks/useTheme';
 import { fontSize, fontWeight } from '../../../theme/typography';
@@ -235,15 +236,12 @@ export function EditMemberScreen({ userId, onBack, onSuccess }: EditMemberScreen
           <Controller
             control={control}
             name="dateOfBirth"
-            render={({ field: { value, onChange, onBlur } }) => (
-              <Input
-                label="Date of Birth (optional, YYYY-MM-DD)"
-                placeholder="e.g. 1990-05-15"
-                value={value}
+            render={({ field: { value, onChange } }) => (
+              <DatePickerInput
+                label="Date of Birth (optional)"
+                value={value ?? ''}
                 onChangeText={onChange}
-                onBlur={onBlur}
                 error={errors.dateOfBirth?.message}
-                leftIcon="calendar-outline"
               />
             )}
           />

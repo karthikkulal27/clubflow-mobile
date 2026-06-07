@@ -1,0 +1,255 @@
+import React from 'react';
+import {
+  View, Text, StyleSheet, ScrollView,
+  KeyboardAvoidingView, Platform, TouchableOpacity,
+} from 'react-native';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Ionicons } from '@expo/vector-icons';
+import Toast from 'react-native-toast-message';
+import { Input } from '../../../components/ui/Input';
+import { Button } from '../../../components/ui/Button';
+import { useTheme } from '../../../hooks/useTheme';
+import { fontSize, fontWeight } from '../../../theme/typography';
+import { spacing, radius } from '../../../theme/spacing';
+import { createExpenseApi } from '../api/expenses.api';
+import { format } from 'date-fns';
+
+const CATEGORIES = [
+  { key: 'food', label: 'Food', icon: 'fast-food-outline' },
+  { key: 'ground', label: 'Ground', icon: 'football-outline' },
+  { key: 'equipment', label: 'Equipment', icon: 'construct-outline' },
+  { key: 'travel', label: 'Travel', icon: 'car-outline' },
+  { key: 'trophy', label: 'Trophy', icon: 'trophy-outline' },
+  { key: 'event', label: 'Event', icon: 'calendar-outline' },
+  { key: 'other', label: 'Other', icon: 'ellipsis-horizontal-outline' },
+] as const;
+
+type Category = typeof CATEGORIES[number]['key'];
+
+const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+
+const schema = z.object({
+  title: z.string().min(3, 'Title must be at least 3 characters'),
+  amount: z.string().min(1, 'Amount is required').refine(
+    (v) => !isNaN(Number(v)) && Number(v) > 0,
+    'Enter a valid amount',
+  ),
+  category: z.string().optional(),
+  expenseDate: z.string().regex(dateRegex, 'Format: YYYY-MM-DD'),
+  description: z.string().optional(),
+});
+
+type FormData = z.infer<typeof schema>;
+
+interface AddExpenseScreenProps {
+  onBack: () => void;
+  onSuccess: () => void;
+}
+
+export function AddExpenseScreen({ onBack, onSuccess }: AddExpenseScreenProps) {
+  const { theme } = useTheme();
+  const queryClient = useQueryClient();
+  const [selectedCategory, setSelectedCategory] = React.useState<Category | null>(null);
+
+  const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      title: '',
+      amount: '',
+      category: '',
+      expenseDate: format(new Date(), 'yyyy-MM-dd'),
+      description: '',
+    },
+  });
+
+  const mutation = useMutation({
+    mutationFn: (data: FormData) =>
+      createExpenseApi({
+        title: data.title,
+        amount: Number(data.amount),
+        category: selectedCategory ?? undefined,
+        expenseDate: data.expenseDate,
+        description: data.description || undefined,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['expenses'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      Toast.show({ type: 'success', text1: 'Expense added', text2: 'Club expense has been recorded' });
+      onSuccess();
+    },
+    onError: (err: any) => {
+      const msg = err?.response?.data?.message ?? 'Failed to add expense';
+      Toast.show({ type: 'error', text1: 'Error', text2: msg });
+    },
+  });
+
+  return (
+    <KeyboardAvoidingView
+      style={{ flex: 1, backgroundColor: theme.background }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <View style={[styles.header, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
+        <TouchableOpacity onPress={onBack} style={styles.backBtn}>
+          <Ionicons name="arrow-back" size={22} color={theme.text.primary} />
+        </TouchableOpacity>
+        <Text style={[styles.headerTitle, { color: theme.text.primary }]}>Add Expense</Text>
+        <View style={styles.backBtn} />
+      </View>
+
+      <ScrollView
+        contentContainerStyle={styles.body}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <Controller
+          control={control}
+          name="title"
+          render={({ field: { value, onChange, onBlur } }) => (
+            <Input
+              label="Expense Title"
+              placeholder="e.g. Ground booking fee"
+              leftIcon="receipt-outline"
+              autoCapitalize="sentences"
+              value={value}
+              onChangeText={onChange}
+              onBlur={onBlur}
+              error={errors.title?.message}
+            />
+          )}
+        />
+
+        <Controller
+          control={control}
+          name="amount"
+          render={({ field: { value, onChange, onBlur } }) => (
+            <Input
+              label="Amount (₹)"
+              placeholder="0.00"
+              leftIcon="logo-usd"
+              keyboardType="decimal-pad"
+              value={value}
+              onChangeText={onChange}
+              onBlur={onBlur}
+              error={errors.amount?.message}
+            />
+          )}
+        />
+
+        {/* Category chips */}
+        <View style={styles.fieldGroup}>
+          <Text style={[styles.groupLabel, { color: theme.text.secondary }]}>Category (optional)</Text>
+          <View style={styles.chipsGrid}>
+            {CATEGORIES.map(({ key, label, icon }) => {
+              const active = selectedCategory === key;
+              return (
+                <TouchableOpacity
+                  key={key}
+                  style={[
+                    styles.chip,
+                    {
+                      backgroundColor: active ? theme.primary : theme.surface,
+                      borderColor: active ? theme.primary : theme.border,
+                    },
+                  ]}
+                  onPress={() => setSelectedCategory(active ? null : key)}
+                  activeOpacity={0.75}
+                >
+                  <Ionicons
+                    name={icon as any}
+                    size={14}
+                    color={active ? '#fff' : theme.text.secondary}
+                  />
+                  <Text style={[styles.chipText, { color: active ? '#fff' : theme.text.secondary }]}>
+                    {label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+
+        <Controller
+          control={control}
+          name="expenseDate"
+          render={({ field: { value, onChange, onBlur } }) => (
+            <Input
+              label="Date"
+              placeholder="YYYY-MM-DD"
+              leftIcon="calendar-outline"
+              keyboardType="number-pad"
+              maxLength={10}
+              value={value}
+              onChangeText={(t) => {
+                const digits = t.replace(/\D/g, '');
+                let formatted = digits;
+                if (digits.length > 4) formatted = `${digits.slice(0, 4)}-${digits.slice(4)}`;
+                if (digits.length > 6) formatted = `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6)}`;
+                onChange(formatted);
+              }}
+              onBlur={onBlur}
+              error={errors.expenseDate?.message}
+            />
+          )}
+        />
+
+        <Controller
+          control={control}
+          name="description"
+          render={({ field: { value, onChange, onBlur } }) => (
+            <Input
+              label="Notes (optional)"
+              placeholder="Additional details..."
+              leftIcon="document-text-outline"
+              autoCapitalize="sentences"
+              multiline
+              numberOfLines={3}
+              value={value}
+              onChangeText={onChange}
+              onBlur={onBlur}
+              error={errors.description?.message}
+            />
+          )}
+        />
+
+        <Button
+          title="Add Expense"
+          fullWidth
+          loading={mutation.isPending}
+          onPress={handleSubmit((data) => mutation.mutate(data))}
+          style={styles.submitBtn}
+        />
+      </ScrollView>
+    </KeyboardAvoidingView>
+  );
+}
+
+const styles = StyleSheet.create({
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing[4],
+    paddingVertical: spacing[4],
+    borderBottomWidth: 1,
+  },
+  headerTitle: { fontSize: fontSize.lg, fontWeight: fontWeight.semibold },
+  backBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
+  body: { padding: spacing[5], gap: spacing[5] },
+  fieldGroup: { gap: spacing[3] },
+  groupLabel: { fontSize: fontSize.sm, fontWeight: fontWeight.medium },
+  chipsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing[2] },
+  chip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing[1] + 2,
+    paddingVertical: spacing[2],
+    paddingHorizontal: spacing[3],
+    borderRadius: radius.full,
+    borderWidth: 1.5,
+  },
+  chipText: { fontSize: fontSize.sm, fontWeight: fontWeight.medium },
+  submitBtn: { marginTop: spacing[2] },
+});

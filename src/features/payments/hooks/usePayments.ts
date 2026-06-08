@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Alert } from 'react-native';
+// EAS dev/prod build: swap this line → import RazorpayCheckout from 'react-native-razorpay';
 import RazorpayCheckout from '../../../lib/razorpay-mock';
 import {
   getMyPaymentsApi,
@@ -8,7 +9,6 @@ import {
   createOrderApi,
   verifyPaymentApi,
   markPaymentPaidApi,
-  mockPayApi,
 } from '../api/payments.api';
 import { getDuesPlansApi, createDuesPlanApi, deleteDuesPlanApi } from '../api/dues-plans.api';
 import {
@@ -49,11 +49,6 @@ export function usePayNow() {
 
   return useMutation({
     mutationFn: async (paymentId: string) => {
-      // In dev (Expo Go), bypass Razorpay — call the mock-pay endpoint directly
-      if (__DEV__) {
-        return mockPayApi(paymentId);
-      }
-
       const order = await createOrderApi(paymentId);
 
       const options = {
@@ -70,10 +65,8 @@ export function usePayNow() {
         theme: { color: '#2563eb' },
       };
 
-      // Opens Razorpay native checkout
       const razorpayData = await RazorpayCheckout.open(options);
 
-      // Verify on backend
       const verified = await verifyPaymentApi({
         paymentId,
         razorpayOrderId: razorpayData.razorpay_order_id,

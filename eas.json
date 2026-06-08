@@ -8,7 +8,9 @@
       "developmentClient": true,
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_API_URL": "http://192.168.1.100:3000/api/v1"
+        "EXPO_PUBLIC_API_URL": "http://192.168.7.5:5000/api/v1",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://gachvxwtrfxxlqgwrxzv.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdhY2h2eHd0cmZ4eGxxZ3dyeHp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2NzM4NzEsImV4cCI6MjA5NjI0OTg3MX0.QNBA4Un5NaoAXWHi4OEQHD_lqw606fnnlkhc-ZkwYp0"
       },
       "android": {
         "buildType": "apk",

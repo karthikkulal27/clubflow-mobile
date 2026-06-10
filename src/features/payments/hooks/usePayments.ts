@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Alert } from 'react-native';
-// EAS dev/prod build: swap this line → import RazorpayCheckout from 'react-native-razorpay';
-import RazorpayCheckout from '../../../lib/razorpay-mock';
+import RazorpayCheckout from 'react-native-razorpay';
 import {
   getMyPaymentsApi,
   getPaymentsListApi,

@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Alert } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { ScreenWrapper } from '../../../components/layout/ScreenWrapper';
 import { SectionHeader } from '../../../components/layout/SectionHeader';
@@ -27,6 +28,7 @@ export function AdminDashboardScreen() {
   const clearAuth = useAuthStore((s) => s.clearAuth);
   const { data, isLoading, refetch, isRefetching } = useDashboard();
   const payNow = usePayNow();
+  const navigation = useNavigation<any>();
 
   const dashboard = data as AdminDashboard | undefined;
 
@@ -121,7 +123,7 @@ export function AdminDashboardScreen() {
           {/* Upcoming Events */}
           {dashboard.upcomingEvents.length > 0 && (
             <View style={styles.section}>
-              <SectionHeader title="Upcoming Events" actionLabel="See all" onAction={() => {}} />
+              <SectionHeader title="Upcoming Events" actionLabel="See all" onAction={() => navigation.navigate('Events')} />
               {dashboard.upcomingEvents.map((event) => (
                 <Card key={event.id} style={styles.eventCard}>
                   <View style={styles.eventRow}>
@@ -153,7 +155,7 @@ export function AdminDashboardScreen() {
           {/* Recent Payments */}
           {dashboard.recentPayments.length > 0 && (
             <View style={styles.section}>
-              <SectionHeader title="Recent Payments" actionLabel="See all" onAction={() => {}} />
+              <SectionHeader title="Recent Payments" actionLabel="See all" onAction={() => navigation.navigate('Finance')} />
               {dashboard.recentPayments.map((payment) => (
                 <View
                   key={payment.id}

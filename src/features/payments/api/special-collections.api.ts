@@ -27,3 +27,7 @@ export async function createSpecialCollectionApi(payload: {
   const { data } = await api.post<ApiResponse<SpecialCollection>>('/special-collections', payload);
   return data.data;
 }
+
+export async function deleteSpecialCollectionApi(collectionId: string): Promise<void> {
+  await api.delete(`/special-collections/${collectionId}`);
+}

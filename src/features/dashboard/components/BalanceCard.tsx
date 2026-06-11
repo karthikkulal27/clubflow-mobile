@@ -14,10 +14,11 @@ interface BalanceCardProps {
 
 export function BalanceCard({ totalCollection, totalExpenses, availableBalance }: BalanceCardProps) {
   const { theme } = useTheme();
+  const isNegative = availableBalance < 0;
 
   return (
     <LinearGradient
-      colors={['#1d4ed8', '#2563eb', '#3b82f6']}
+      colors={isNegative ? ['#b91c1c', '#dc2626', '#ef4444'] : ['#1d4ed8', '#2563eb', '#3b82f6']}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.card}
@@ -28,6 +29,12 @@ export function BalanceCard({ totalCollection, totalExpenses, availableBalance }
           <Text style={styles.balanceAmount}>
             ₹{availableBalance.toLocaleString('en-IN')}
           </Text>
+          {isNegative && (
+            <View style={styles.warningRow}>
+              <Ionicons name="warning-outline" size={12} color="rgba(255,255,255,0.9)" />
+              <Text style={styles.warningText}>Expenses exceed collections</Text>
+            </View>
+          )}
         </View>
         <View style={styles.iconWrapper}>
           <Ionicons name="wallet" size={24} color="rgba(255,255,255,0.9)" />
@@ -88,4 +95,6 @@ const styles = StyleSheet.create({
   statLabelText: { fontSize: fontSize.xs, color: 'rgba(255,255,255,0.7)' },
   statValue: { fontSize: fontSize.lg, fontWeight: fontWeight.semibold, color: '#ffffff' },
   statDivider: { width: 1, height: 36, marginHorizontal: spacing[4] },
+  warningRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: spacing[1] },
+  warningText: { fontSize: fontSize.xs, color: 'rgba(255,255,255,0.9)' },
 });

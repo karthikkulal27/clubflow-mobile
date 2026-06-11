@@ -18,6 +18,15 @@ Use the **plain** command — no `--lan` (threw `ERR_STREAM_PREMATURE_CLOSE`) an
 - Phone needs an **Expo Go build matching SDK 56** — the Play Store version often lags and throws "Project is incompatible with this version of Expo Go". Fix: download directly from `expo.dev/go` (auto-detects the right SDK build), not the Play Store.
 - On first connect you may see "recommended to log in with your Expo account" / "unverified app" prompts — choose **Proceed anonymously**.
 
+## Razorpay webhook security
+The backend verifies each webhook payload with HMAC-SHA256 (`rawBody + RAZORPAY_WEBHOOK_SECRET`). As defense-in-depth, **allowlist Razorpay's static IPs** in your firewall/hosting platform. Current documented IPs: `52.44.130.86`, `52.44.130.87`, `52.90.3.196`, `52.90.3.197`, `54.210.151.36`, `54.210.151.37` — always verify the latest list at `razorpay.com/docs/webhooks/setup-edit` before deploying, as they can change.
+
+## Cron-in-same-process risk (production)
+All three cron jobs (`generate-dues`, `payment-reminder`, `event-reminder`) run in the same Node.js process as the HTTP server. This is fine for a single-instance deployment but **will fire duplicate tasks if you scale horizontally** (e.g. two EC2 instances, two Railway replicas, etc.). In that scenario replace the cron jobs with one of:
+- A dedicated worker dyno/container that runs only cron (and is scaled to exactly 1 replica)
+- A distributed lock (e.g. `redlock` over Redis) that ensures only one instance fires per tick
+- A managed scheduler service (AWS EventBridge, Railway Cron, etc.) that invokes a protected internal endpoint
+
 ## Known incompatibilities already patched (don't re-break these)
 - `react-native-razorpay` is a native module that crashes Expo Go ("something went wrong"). It's mocked at `src/lib/razorpay-mock.ts` and imported in `src/features/payments/hooks/usePayments.ts:3` instead of the real package. Real payment testing requires `eas build --profile development`.
 - `app.json` → `android.adaptiveIcon` and the `expo-notifications` plugin icon were repointed to files that actually exist in `/assets` (`android-icon-foreground.png`, `android-icon-background.png`, `android-icon-monochrome.png`) — the original `adaptive-icon.png`/`notification-icon.png` referenced don't exist and break asset resolution.

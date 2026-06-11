@@ -16,7 +16,7 @@ import { TimePickerInput } from '../../../components/ui/DatePickerInput';
 import { useTheme } from '../../../hooks/useTheme';
 import { fontSize, fontWeight } from '../../../theme/typography';
 import { spacing, radius } from '../../../theme/spacing';
-import { createEventApi } from '../api/events.api';
+import { createEventApi, updateEventApi } from '../api/events.api';
 
 const schema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters'),
@@ -32,15 +32,25 @@ type FormData = z.infer<typeof schema>;
 interface CreateEventScreenProps {
   onBack: () => void;
   onSuccess: () => void;
+  eventId?: string;
+  initialValues?: {
+    title: string;
+    location?: string;
+    description?: string;
+    date: string;
+    startTime: string;
+    endTime?: string;
+  };
 }
 
-export function CreateEventScreen({ onBack, onSuccess }: CreateEventScreenProps) {
+export function CreateEventScreen({ onBack, onSuccess, eventId, initialValues }: CreateEventScreenProps) {
   const { theme } = useTheme();
   const queryClient = useQueryClient();
+  const isEditing = !!eventId;
 
   const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: {
+    defaultValues: initialValues ?? {
       title: '',
       location: '',
       description: '',
@@ -54,6 +64,15 @@ export function CreateEventScreen({ onBack, onSuccess }: CreateEventScreenProps)
     mutationFn: (data: FormData) => {
       const startAt = `${data.date}T${data.startTime}:00.000Z`;
       const endAt = data.endTime ? `${data.date}T${data.endTime}:00.000Z` : undefined;
+      if (isEditing) {
+        return updateEventApi(eventId!, {
+          title: data.title,
+          description: data.description || undefined,
+          location: data.location || undefined,
+          startAt,
+          endAt,
+        });
+      }
       return createEventApi({
         title: data.title,
         description: data.description || undefined,
@@ -65,11 +84,15 @@ export function CreateEventScreen({ onBack, onSuccess }: CreateEventScreenProps)
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['events'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
-      Toast.show({ type: 'success', text1: 'Event created', text2: 'Members will be notified' });
+      Toast.show({
+        type: 'success',
+        text1: isEditing ? 'Event updated' : 'Event created',
+        text2: isEditing ? undefined : 'Members will be notified',
+      });
       onSuccess();
     },
     onError: (err: any) => {
-      const msg = err?.response?.data?.message ?? 'Failed to create event';
+      const msg = err?.response?.data?.message ?? (isEditing ? 'Failed to update event' : 'Failed to create event');
       Toast.show({ type: 'error', text1: 'Error', text2: msg });
     },
   });
@@ -83,7 +106,7 @@ export function CreateEventScreen({ onBack, onSuccess }: CreateEventScreenProps)
         <TouchableOpacity onPress={onBack} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={22} color={theme.text.primary} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: theme.text.primary }]}>Create Event</Text>
+        <Text style={[styles.headerTitle, { color: theme.text.primary }]}>{isEditing ? 'Edit Event' : 'Create Event'}</Text>
         <View style={styles.backBtn} />
       </View>
 
@@ -197,7 +220,7 @@ export function CreateEventScreen({ onBack, onSuccess }: CreateEventScreenProps)
         />
 
         <Button
-          title="Create Event"
+          title={isEditing ? 'Save Changes' : 'Create Event'}
           fullWidth
           loading={mutation.isPending}
           onPress={handleSubmit((data) => mutation.mutate(data))}

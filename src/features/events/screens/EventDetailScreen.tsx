@@ -8,6 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Card } from '../../../components/ui/Card';
 import { Button } from '../../../components/ui/Button';
 import { useEventDetail, useRsvp } from '../hooks/useEvents';
+import { useAuth } from '../../../hooks/useAuth';
 import { useTheme } from '../../../hooks/useTheme';
 import { fontSize, fontWeight } from '../../../theme/typography';
 import { spacing, radius } from '../../../theme/spacing';
@@ -23,10 +24,12 @@ const RSVP_OPTIONS: { status: RsvpStatus; label: string; icon: string }[] = [
 interface EventDetailScreenProps {
   eventId: string;
   onBack?: () => void;
+  onEdit?: (event: { id: string; title: string; location?: string; description?: string; startAt: string; endAt?: string }) => void;
 }
 
-export function EventDetailScreen({ eventId, onBack }: EventDetailScreenProps) {
+export function EventDetailScreen({ eventId, onBack, onEdit }: EventDetailScreenProps) {
   const { theme } = useTheme();
+  const { isAdmin } = useAuth();
   const { data: event, isLoading } = useEventDetail(eventId);
   const rsvp = useRsvp(eventId);
 
@@ -56,7 +59,13 @@ export function EventDetailScreen({ eventId, onBack }: EventDetailScreenProps) {
         <Text style={[styles.navTitle, { color: theme.text.primary }]} numberOfLines={1}>
           Event Details
         </Text>
-        <View style={{ width: 38 }} />
+        {isAdmin && onEdit ? (
+          <TouchableOpacity onPress={() => onEdit(event)} style={styles.backBtn}>
+            <Ionicons name="create-outline" size={22} color={theme.primary} />
+          </TouchableOpacity>
+        ) : (
+          <View style={{ width: 38 }} />
+        )}
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false}>

@@ -1,14 +1,15 @@
 import React from 'react';
 import {
   View, Text, StyleSheet, FlatList,
-  TouchableOpacity, ActivityIndicator,
+  TouchableOpacity, ActivityIndicator, Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useQuery } from '@tanstack/react-query';
+import Toast from 'react-native-toast-message';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ScreenWrapper } from '../../../components/layout/ScreenWrapper';
 import { Card } from '../../../components/ui/Card';
 import { EmptyState } from '../../../components/ui/EmptyState';
-import { getAnnouncementsApi } from '../api/announcements.api';
+import { getAnnouncementsApi, deleteAnnouncementApi } from '../api/announcements.api';
 import { useAuth } from '../../../hooks/useAuth';
 import { useTheme } from '../../../hooks/useTheme';
 import { fontSize, fontWeight } from '../../../theme/typography';
@@ -23,9 +24,32 @@ function useAnnouncements() {
   });
 }
 
-function AnnouncementCard({ item }: { item: Announcement }) {
+function useDeleteAnnouncement() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => deleteAnnouncementApi(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['announcements'] }),
+  });
+}
+
+function AnnouncementCard({ item, isAdmin }: { item: Announcement; isAdmin: boolean }) {
   const { theme } = useTheme();
   const [expanded, setExpanded] = React.useState(false);
+  const deleteAnnouncement = useDeleteAnnouncement();
+
+  const handleDelete = () => {
+    Alert.alert('Delete announcement?', `"${item.title}" will be permanently removed.`, [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: () => deleteAnnouncement.mutate(item.id, {
+          onSuccess: () => Toast.show({ type: 'success', text1: 'Announcement deleted' }),
+          onError: () => Toast.show({ type: 'error', text1: 'Could not delete announcement' }),
+        }),
+      },
+    ]);
+  };
 
   return (
     <TouchableOpacity onPress={() => setExpanded((v) => !v)} activeOpacity={0.9}>
@@ -40,11 +64,20 @@ function AnnouncementCard({ item }: { item: Announcement }) {
               {format(new Date(item.publishedAt), 'MMM d, yyyy • h:mm a')}
             </Text>
           </View>
-          <Ionicons
-            name={expanded ? 'chevron-up' : 'chevron-down'}
-            size={18}
-            color={theme.text.tertiary}
-          />
+          {isAdmin ? (
+            <TouchableOpacity
+              onPress={(e) => { e.stopPropagation?.(); handleDelete(); }}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Ionicons name="trash-outline" size={18} color={theme.danger} />
+            </TouchableOpacity>
+          ) : (
+            <Ionicons
+              name={expanded ? 'chevron-up' : 'chevron-down'}
+              size={18}
+              color={theme.text.tertiary}
+            />
+          )}
         </View>
 
         <Text
@@ -104,7 +137,7 @@ export function AnnouncementsScreen({ onAdd }: AnnouncementsScreenProps) {
               subtitle="Club updates and notices will appear here"
             />
           }
-          renderItem={({ item }) => <AnnouncementCard item={item} />}
+          renderItem={({ item }) => <AnnouncementCard item={item} isAdmin={isAdmin} />}
         />
       )}
     </ScreenWrapper>

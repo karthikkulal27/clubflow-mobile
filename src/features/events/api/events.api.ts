@@ -35,6 +35,20 @@ export async function createEventApi(payload: {
   return data.data;
 }
 
+export async function updateEventApi(
+  eventId: string,
+  payload: {
+    title?: string;
+    description?: string;
+    location?: string;
+    startAt?: string;
+    endAt?: string;
+  },
+): Promise<Event> {
+  const { data } = await api.patch<ApiResponse<Event>>(`/events/${eventId}`, payload);
+  return data.data;
+}
+
 export async function deleteEventApi(eventId: string): Promise<void> {
   await api.delete(`/events/${eventId}`);
 }

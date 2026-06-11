@@ -97,6 +97,15 @@ export function CreateDuesPlanScreen({ onBack, onSuccess }: CreateDuesPlanScreen
       .sort((a, b) => a.year - b.year || a.month - b.month);
   }, [selected]);
 
+  const hasPastMonths = useMemo(() => {
+    const now = new Date();
+    const curYear = now.getFullYear();
+    const curMonth = now.getMonth() + 1;
+    return sortedPeriods.some(
+      (p) => p.year < curYear || (p.year === curYear && p.month < curMonth),
+    );
+  }, [sortedPeriods]);
+
   const onSubmit = (data: FormData) => {
     if (sortedPeriods.length === 0) {
       Toast.show({ type: 'error', text1: 'Pick at least one month', text2: 'Select the months this price applies to' });
@@ -268,6 +277,15 @@ export function CreateDuesPlanScreen({ onBack, onSuccess }: CreateDuesPlanScreen
           </View>
         )}
 
+        {hasPastMonths && (
+          <View style={[styles.pastWarning, { backgroundColor: '#fef3c7', borderColor: '#f59e0b' }]}>
+            <Ionicons name="warning-outline" size={16} color="#f59e0b" />
+            <Text style={styles.pastWarningText}>
+              Past months selected — dues will be generated immediately for all active members.
+            </Text>
+          </View>
+        )}
+
         <Button
           title="Create Plan"
           fullWidth
@@ -330,4 +348,13 @@ const styles = StyleSheet.create({
   },
   periodChipText: { fontSize: fontSize.xs, fontWeight: fontWeight.medium },
   submitBtn: { marginTop: spacing[2] },
+  pastWarning: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing[2],
+    padding: spacing[3],
+    borderRadius: radius.lg,
+    borderWidth: 1,
+  },
+  pastWarningText: { flex: 1, fontSize: fontSize.xs, color: '#92400e', lineHeight: 18 },
 });

@@ -9,7 +9,7 @@ import { ScreenWrapper } from '../../../components/layout/ScreenWrapper';
 import { Avatar } from '../../../components/ui/Avatar';
 import { Badge } from '../../../components/ui/Badge';
 import { EmptyState } from '../../../components/ui/EmptyState';
-import { useSpecialCollectionPayments, useMarkPaymentPaid } from '../hooks/usePayments';
+import { useSpecialCollectionPayments, useMarkPaymentPaid, useDeleteSpecialCollection } from '../hooks/usePayments';
 import { useAuth } from '../../../hooks/useAuth';
 import { useTheme } from '../../../hooks/useTheme';
 import { fontSize, fontWeight } from '../../../theme/typography';
@@ -84,6 +84,25 @@ export function SpecialCollectionDetailScreen({ collectionId, label, onBack }: S
 
   const { data, isLoading, refetch, isRefetching } = useSpecialCollectionPayments(collectionId);
   const markPaid = useMarkPaymentPaid();
+  const deleteCollection = useDeleteSpecialCollection();
+
+  const handleArchive = () => {
+    Alert.alert(
+      'Archive collection?',
+      'This will hide the collection from the list. Existing payment records are kept.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Archive',
+          style: 'destructive',
+          onPress: () => deleteCollection.mutate(collectionId, {
+            onSuccess: () => { Toast.show({ type: 'success', text1: 'Collection archived' }); onBack(); },
+            onError: () => Toast.show({ type: 'error', text1: 'Failed to archive' }),
+          }),
+        },
+      ],
+    );
+  };
 
   const payments = data?.payments ?? [];
   const paid = payments.filter((p) => p.status === 'PAID');
@@ -127,7 +146,13 @@ export function SpecialCollectionDetailScreen({ collectionId, label, onBack }: S
         <Text style={[styles.headerTitle, { color: theme.text.primary }]} numberOfLines={1}>
           {label}
         </Text>
-        <View style={styles.backBtn} />
+        {isAdmin ? (
+          <TouchableOpacity onPress={handleArchive} style={styles.backBtn} activeOpacity={0.7}>
+            <Ionicons name="archive-outline" size={20} color={theme.danger} />
+          </TouchableOpacity>
+        ) : (
+          <View style={styles.backBtn} />
+        )}
       </View>
 
       <FlatList

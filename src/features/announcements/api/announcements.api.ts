@@ -17,3 +17,7 @@ export async function createAnnouncementApi(payload: {
 export async function publishAnnouncementApi(announcementId: string): Promise<void> {
   await api.post(`/announcements/${announcementId}/publish`);
 }
+
+export async function deleteAnnouncementApi(announcementId: string): Promise<void> {
+  await api.delete(`/announcements/${announcementId}`);
+}

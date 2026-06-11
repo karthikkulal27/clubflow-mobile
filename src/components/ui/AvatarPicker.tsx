@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, TouchableOpacity, ActivityIndicator, StyleSheet, Text } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
+import Toast from 'react-native-toast-message';
 import { Avatar } from './Avatar';
 import { uploadAvatarApi } from '../../lib/uploadApi';
 import { useTheme } from '../../hooks/useTheme';
@@ -44,8 +45,8 @@ export function AvatarPicker({ name, currentUri, size = 80, onUploaded }: Avatar
       const url = await uploadAvatarApi(uri);
       onUploaded(url);
     } catch (err) {
-      console.error('[AvatarPicker] upload failed:', err);
       setLocalUri(null);
+      Toast.show({ type: 'error', text1: 'Upload failed', text2: 'Could not upload photo. Try again.' });
     } finally {
       setUploading(false);
     }

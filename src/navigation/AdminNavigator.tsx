@@ -172,6 +172,22 @@ function EventsNavigator() {
           <EventDetailScreen
             eventId={(route.params as { eventId: string }).eventId}
             onBack={() => navigation.goBack()}
+            onEdit={(event) => {
+              const startAt = new Date(event.startAt);
+              const endAt = event.endAt ? new Date(event.endAt) : undefined;
+              const pad = (n: number) => String(n).padStart(2, '0');
+              navigation.navigate('EditEvent', {
+                eventId: event.id,
+                initialValues: {
+                  title: event.title,
+                  location: event.location ?? '',
+                  description: event.description ?? '',
+                  date: `${startAt.getUTCFullYear()}-${pad(startAt.getUTCMonth() + 1)}-${pad(startAt.getUTCDate())}`,
+                  startTime: `${pad(startAt.getUTCHours())}:${pad(startAt.getUTCMinutes())}`,
+                  endTime: endAt ? `${pad(endAt.getUTCHours())}:${pad(endAt.getUTCMinutes())}` : '',
+                },
+              });
+            }}
           />
         )}
       </EventsStack.Screen>
@@ -179,6 +195,19 @@ function EventsNavigator() {
         {({ navigation }) => (
           <CreateEventScreen onBack={() => navigation.goBack()} onSuccess={() => navigation.goBack()} />
         )}
+      </EventsStack.Screen>
+      <EventsStack.Screen name="EditEvent">
+        {({ route, navigation }) => {
+          const params = route.params as { eventId: string; initialValues: any };
+          return (
+            <CreateEventScreen
+              onBack={() => navigation.goBack()}
+              onSuccess={() => navigation.goBack()}
+              eventId={params.eventId}
+              initialValues={params.initialValues}
+            />
+          );
+        }}
       </EventsStack.Screen>
     </EventsStack.Navigator>
   );

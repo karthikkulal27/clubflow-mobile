@@ -14,6 +14,7 @@ import {
   getSpecialCollectionsApi,
   getSpecialCollectionPaymentsApi,
   createSpecialCollectionApi,
+  deleteSpecialCollectionApi,
 } from '../api/special-collections.api';
 import { useAuth } from '../../../hooks/useAuth';
 import type { DuesPlanPeriod } from '../../../types';
@@ -144,6 +145,18 @@ export function useCreateDuesPlan() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dues-plans'] });
       queryClient.invalidateQueries({ queryKey: ['payments'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+    },
+  });
+}
+
+export function useDeleteSpecialCollection() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (collectionId: string) => deleteSpecialCollectionApi(collectionId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['special-collections'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
     },
   });

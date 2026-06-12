@@ -45,7 +45,7 @@ const STATE_LABELS: Record<RowState, { label: string; variant: 'success' | 'warn
   notDue: { label: 'Not due yet', variant: 'neutral' },
 };
 
-function MonthCard({ row, blockedByCurrent, onPay }: { row: MonthRow; blockedByCurrent: boolean; onPay: (id: string) => void }) {
+function MonthCard({ row, blockedByCurrent, onPay, isPaying }: { row: MonthRow; blockedByCurrent: boolean; onPay: (id: string) => void; isPaying?: boolean }) {
   const { theme } = useTheme();
   const { month, year, payment, state } = row;
   const { label, variant } = STATE_LABELS[state];
@@ -92,12 +92,14 @@ function MonthCard({ row, blockedByCurrent, onPay }: { row: MonthRow; blockedByC
           <Badge label={label} variant={variant} />
           {showPayBtn && payment && (
             <TouchableOpacity
-              style={[styles.payBtn, { backgroundColor: theme.primary }]}
-              onPress={() => onPay(payment.id)}
+              style={[styles.payBtn, { backgroundColor: isPaying ? theme.primaryLight : theme.primary }]}
+              onPress={() => !isPaying && onPay(payment.id)}
               activeOpacity={0.85}
+              disabled={isPaying}
             >
-              <Text style={styles.payBtnText}>Pay</Text>
-              <Ionicons name="arrow-forward" size={12} color="#fff" />
+              {isPaying
+                ? <ActivityIndicator size="small" color={theme.primary} />
+                : <><Text style={styles.payBtnText}>Pay</Text><Ionicons name="arrow-forward" size={12} color="#fff" /></>}
             </TouchableOpacity>
           )}
         </View>
@@ -106,7 +108,7 @@ function MonthCard({ row, blockedByCurrent, onPay }: { row: MonthRow; blockedByC
   );
 }
 
-function SpecialChargeCard({ payment, onPay }: { payment: Payment; onPay: (id: string) => void }) {
+function SpecialChargeCard({ payment, onPay, isPaying }: { payment: Payment; onPay: (id: string) => void; isPaying?: boolean }) {
   const { theme } = useTheme();
   const isPaid = payment.status === 'PAID';
 
@@ -139,12 +141,14 @@ function SpecialChargeCard({ payment, onPay }: { payment: Payment; onPay: (id: s
           <Badge label={isPaid ? 'Paid' : 'Pending'} variant={isPaid ? 'success' : 'warning'} />
           {!isPaid && (
             <TouchableOpacity
-              style={[styles.payBtn, { backgroundColor: theme.primary }]}
-              onPress={() => onPay(payment.id)}
+              style={[styles.payBtn, { backgroundColor: isPaying ? theme.primaryLight : theme.primary }]}
+              onPress={() => !isPaying && onPay(payment.id)}
               activeOpacity={0.85}
+              disabled={isPaying}
             >
-              <Text style={styles.payBtnText}>Pay</Text>
-              <Ionicons name="arrow-forward" size={12} color="#fff" />
+              {isPaying
+                ? <ActivityIndicator size="small" color={theme.primary} />
+                : <><Text style={styles.payBtnText}>Pay</Text><Ionicons name="arrow-forward" size={12} color="#fff" /></>}
             </TouchableOpacity>
           )}
         </View>
@@ -181,7 +185,6 @@ export function MyPaymentsScreen() {
     <ScreenWrapper scrollable={false} padded={false}>
       <View style={[styles.header, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
         <Text style={[styles.title, { color: theme.text.primary }]}>My Payments</Text>
-        {payNow.isPending && <ActivityIndicator size="small" color={theme.primary} />}
       </View>
 
       {currentDue?.status === 'PENDING' && (
@@ -210,7 +213,7 @@ export function MyPaymentsScreen() {
               <View style={styles.specialSection}>
                 <Text style={[styles.sectionTitle, { color: theme.text.secondary }]}>Special Collections</Text>
                 {specialCharges.map((p) => (
-                  <SpecialChargeCard key={p.id} payment={p} onPay={handlePay} />
+                  <SpecialChargeCard key={p.id} payment={p} onPay={handlePay} isPaying={payNow.isPending && payNow.variables === p.id} />
                 ))}
                 <Text style={[styles.sectionTitle, { color: theme.text.secondary }]}>Monthly Dues</Text>
               </View>
@@ -224,7 +227,7 @@ export function MyPaymentsScreen() {
             />
           }
           renderItem={({ item }) => (
-            <MonthCard row={item} blockedByCurrent={!currentCleared} onPay={handlePay} />
+            <MonthCard row={item} blockedByCurrent={!currentCleared} onPay={handlePay} isPaying={payNow.isPending && payNow.variables === item.payment?.id} />
           )}
         />
       )}

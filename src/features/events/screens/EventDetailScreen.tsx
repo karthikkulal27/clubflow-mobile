@@ -24,7 +24,7 @@ const RSVP_OPTIONS: { status: RsvpStatus; label: string; icon: string }[] = [
 interface EventDetailScreenProps {
   eventId: string;
   onBack?: () => void;
-  onEdit?: (event: { id: string; title: string; location?: string; description?: string; startAt: string; endAt?: string }) => void;
+  onEdit?: (event: { id: string; title: string; location: string | null; description: string | null; startAt: string; endAt: string | null }) => void;
 }
 
 export function EventDetailScreen({ eventId, onBack, onEdit }: EventDetailScreenProps) {

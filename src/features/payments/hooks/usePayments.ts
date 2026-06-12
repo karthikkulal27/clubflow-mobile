@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Alert } from 'react-native';
+import Toast from 'react-native-toast-message';
 import RazorpayCheckout from 'react-native-razorpay';
 import {
   getMyPaymentsApi,
@@ -79,12 +79,12 @@ export function usePayNow() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['payments'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
-      Alert.alert('Payment Successful', 'Your payment has been recorded. Thank you!');
+      Toast.show({ type: 'success', text1: 'Payment successful', text2: 'Your payment has been recorded. Thank you!' });
     },
     onError: (err: unknown) => {
       const msg = (err as { description?: string })?.description;
-      // Razorpay cancellation has no description — don't show error
-      if (msg) Alert.alert('Payment Failed', msg);
+      // Razorpay cancellation (no description) — don't show error
+      if (msg) Toast.show({ type: 'error', text1: 'Payment failed', text2: msg });
     },
   });
 }

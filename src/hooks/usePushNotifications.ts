@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import * as Notifications from '../lib/notifications-mock';
+import * as Notifications from '../lib/notifications-bridge';
 import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';

@@ -107,7 +107,7 @@ function FinanceNavigator() {
       </FinanceStack.Screen>
       <FinanceStack.Screen name="Expenses">
         {({ navigation }) => (
-          <ExpensesListScreen onAdd={() => navigation.navigate('AddExpense')} />
+          <ExpensesListScreen onBack={() => navigation.goBack()} onAdd={() => navigation.navigate('AddExpense')} />
         )}
       </FinanceStack.Screen>
       <FinanceStack.Screen name="AddExpense">
@@ -117,7 +117,7 @@ function FinanceNavigator() {
       </FinanceStack.Screen>
       <FinanceStack.Screen name="DuesPlans">
         {({ navigation }) => (
-          <DuesPlansScreen onAdd={() => navigation.navigate('CreateDuesPlan')} />
+          <DuesPlansScreen onBack={() => navigation.goBack()} onAdd={() => navigation.navigate('CreateDuesPlan')} />
         )}
       </FinanceStack.Screen>
       <FinanceStack.Screen name="CreateDuesPlan">
@@ -128,6 +128,7 @@ function FinanceNavigator() {
       <FinanceStack.Screen name="SpecialCollections">
         {({ navigation }) => (
           <SpecialCollectionsScreen
+            onBack={() => navigation.goBack()}
             onAdd={() => navigation.navigate('CreateSpecialCollection')}
             onSelect={(collectionId, label) => navigation.navigate('SpecialCollectionDetail', { collectionId, label })}
           />
@@ -225,7 +226,7 @@ function MoreNavigator() {
       </MoreStack.Screen>
       <MoreStack.Screen name="Announcements">
         {({ navigation }) => (
-          <AnnouncementsScreen onAdd={() => navigation.navigate('CreateAnnouncement')} />
+          <AnnouncementsScreen onBack={() => navigation.goBack()} onAdd={() => navigation.navigate('CreateAnnouncement')} />
         )}
       </MoreStack.Screen>
       <MoreStack.Screen name="CreateAnnouncement">
@@ -233,7 +234,9 @@ function MoreNavigator() {
           <CreateAnnouncementScreen onBack={() => navigation.goBack()} onSuccess={() => navigation.goBack()} />
         )}
       </MoreStack.Screen>
-      <MoreStack.Screen name="Notifications" component={NotificationsScreen} />
+      <MoreStack.Screen name="Notifications">
+        {({ navigation }) => <NotificationsScreen onBack={() => navigation.goBack()} />}
+      </MoreStack.Screen>
       <MoreStack.Screen name="Profile">
         {({ navigation }) => (
           <ProfileScreen onBack={() => navigation.goBack()} />

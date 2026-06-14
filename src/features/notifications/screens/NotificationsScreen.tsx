@@ -77,7 +77,11 @@ function NotificationRow({
   );
 }
 
-export function NotificationsScreen() {
+interface NotificationsScreenProps {
+  onBack?: () => void;
+}
+
+export function NotificationsScreen({ onBack }: NotificationsScreenProps) {
   const { theme } = useTheme();
   const queryClient = useQueryClient();
 
@@ -102,6 +106,11 @@ export function NotificationsScreen() {
   return (
     <ScreenWrapper scrollable={false} padded={false}>
       <View style={[styles.header, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
+        {onBack && (
+          <TouchableOpacity onPress={onBack} hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}>
+            <Ionicons name="arrow-back" size={22} color={theme.text.primary} />
+          </TouchableOpacity>
+        )}
         <View style={styles.headerLeft}>
           <Text style={[styles.title, { color: theme.text.primary }]}>Notifications</Text>
           {unreadCount > 0 && (

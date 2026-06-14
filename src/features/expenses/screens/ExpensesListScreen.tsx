@@ -91,9 +91,10 @@ function ExpenseCard({
 
 interface ExpensesListScreenProps {
   onAdd?: () => void;
+  onBack?: () => void;
 }
 
-export function ExpensesListScreen({ onAdd }: ExpensesListScreenProps) {
+export function ExpensesListScreen({ onAdd, onBack }: ExpensesListScreenProps) {
   const { theme } = useTheme();
   const { isAdmin } = useAuth();
   const queryClient = useQueryClient();
@@ -125,7 +126,14 @@ export function ExpensesListScreen({ onAdd }: ExpensesListScreenProps) {
   return (
     <ScreenWrapper scrollable={false} padded={false}>
       <View style={[styles.header, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
-        <Text style={[styles.title, { color: theme.text.primary }]}>Expenses</Text>
+        <View style={styles.headerLeft}>
+          {onBack && (
+            <TouchableOpacity onPress={onBack} hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}>
+              <Ionicons name="arrow-back" size={22} color={theme.text.primary} />
+            </TouchableOpacity>
+          )}
+          <Text style={[styles.title, { color: theme.text.primary }]}>Expenses</Text>
+        </View>
         {isAdmin && (
           <TouchableOpacity style={[styles.addBtn, { backgroundColor: theme.primary }]} onPress={onAdd}>
             <Ionicons name="add" size={20} color="#fff" />
@@ -178,6 +186,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing[4],
     borderBottomWidth: 1,
   },
+  headerLeft: { flexDirection: 'row', alignItems: 'center', gap: spacing[2] },
   title: { fontSize: fontSize.xl, fontWeight: fontWeight.bold },
   addBtn: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
   totalBanner: {

@@ -71,16 +71,24 @@ function CollectionCard({ collection, onPress }: { collection: SpecialCollection
 interface SpecialCollectionsScreenProps {
   onAdd: () => void;
   onSelect: (collectionId: string, label: string) => void;
+  onBack?: () => void;
 }
 
-export function SpecialCollectionsScreen({ onAdd, onSelect }: SpecialCollectionsScreenProps) {
+export function SpecialCollectionsScreen({ onAdd, onSelect, onBack }: SpecialCollectionsScreenProps) {
   const { theme } = useTheme();
   const { data: collections, isLoading, refetch, isRefetching } = useSpecialCollections();
 
   return (
     <ScreenWrapper scrollable={false} padded={false}>
       <View style={[styles.header, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
-        <Text style={[styles.title, { color: theme.text.primary }]}>Special Collections</Text>
+        <View style={styles.headerLeft}>
+          {onBack && (
+            <TouchableOpacity onPress={onBack} hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}>
+              <Ionicons name="arrow-back" size={22} color={theme.text.primary} />
+            </TouchableOpacity>
+          )}
+          <Text style={[styles.title, { color: theme.text.primary }]}>Special Collections</Text>
+        </View>
         <TouchableOpacity style={[styles.addBtn, { backgroundColor: theme.primary }]} onPress={onAdd} activeOpacity={0.85}>
           <Ionicons name="add" size={20} color="#fff" />
         </TouchableOpacity>
@@ -130,6 +138,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing[4],
     borderBottomWidth: 1,
   },
+  headerLeft: { flexDirection: 'row', alignItems: 'center', gap: spacing[2] },
   title: { fontSize: fontSize.xl, fontWeight: fontWeight.bold },
   addBtn: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
   banner: {

@@ -52,7 +52,7 @@ function FinanceNavigator() {
         )}
       </FinanceStack.Screen>
       <FinanceStack.Screen name="Expenses">
-        {() => <ExpensesListScreen />}
+        {({ navigation }) => <ExpensesListScreen onBack={() => navigation.goBack()} />}
       </FinanceStack.Screen>
     </FinanceStack.Navigator>
   );
@@ -68,8 +68,12 @@ function MoreNavigator() {
           <MoreScreen onNavigate={(screen) => navigation.navigate(screen)} />
         )}
       </MoreStack.Screen>
-      <MoreStack.Screen name="Announcements" component={AnnouncementsScreen} />
-      <MoreStack.Screen name="Notifications" component={NotificationsScreen} />
+      <MoreStack.Screen name="Announcements">
+        {({ navigation }) => <AnnouncementsScreen onBack={() => navigation.goBack()} />}
+      </MoreStack.Screen>
+      <MoreStack.Screen name="Notifications">
+        {({ navigation }) => <NotificationsScreen onBack={() => navigation.goBack()} />}
+      </MoreStack.Screen>
       <MoreStack.Screen name="Profile">
         {({ navigation }) => (
           <ProfileScreen onBack={() => navigation.goBack()} />

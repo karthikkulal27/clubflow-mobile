@@ -45,10 +45,13 @@ export function LoginScreen() {
     try {
       await login.mutateAsync(values);
     } catch (err: unknown) {
-      const msg =
-        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ??
-        'Login failed. Please check your credentials.';
-      Toast.show({ type: 'error', text1: 'Login Failed', text2: msg });
+      const e = err as any;
+      if (!e?.response) {
+        Toast.show({ type: 'error', text1: 'Network Error', text2: 'Cannot reach server. Check your internet connection and try again.' });
+      } else {
+        const msg = e.response?.data?.message ?? 'Invalid phone number or password.';
+        Toast.show({ type: 'error', text1: 'Login Failed', text2: msg });
+      }
     }
   };
 

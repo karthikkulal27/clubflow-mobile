@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "255298908330",
+    "project_id": "clubflow-a067c",
+    "storage_bucket": "clubflow-a067c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:255298908330:android:58981031e146560a7f60d3",
+        "android_client_info": {
+          "package_name": "com.clubflow.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAG_Mk10QSASeJUNpzOksJG4yZ0R12pfX8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

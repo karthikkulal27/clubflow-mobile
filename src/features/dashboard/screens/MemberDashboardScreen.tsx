@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Alert, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useQuery } from '@tanstack/react-query';
 import { useNavigation } from '@react-navigation/native';
-import { getNotificationsApi } from '../../notifications/api/notifications.api';
+import { useNotificationCount } from '../../../hooks/useNotificationCount';
 import { ScreenWrapper } from '../../../components/layout/ScreenWrapper';
 import { SectionHeader } from '../../../components/layout/SectionHeader';
 import { Card } from '../../../components/ui/Card';
@@ -34,12 +33,7 @@ export function MemberDashboardScreen() {
   const payNow = usePayNow();
   const navigation = useNavigation<any>();
   const [showNudge, setShowNudge] = useState(!nudgeDismissedThisSession);
-  const { data: notifData } = useQuery({
-    queryKey: ['notifications'],
-    queryFn: getNotificationsApi,
-    refetchInterval: 60_000,
-  });
-  const unreadCount = notifData?.unreadCount ?? 0;
+  const unreadCount = useNotificationCount();
 
   const profileCompletion = memberProfile?.profileCompletion ?? 0;
 

@@ -2,8 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Alert, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import { useQuery } from '@tanstack/react-query';
-import { getNotificationsApi } from '../../notifications/api/notifications.api';
+import { useNotificationCount } from '../../../hooks/useNotificationCount';
 import { ScreenWrapper } from '../../../components/layout/ScreenWrapper';
 import { SectionHeader } from '../../../components/layout/SectionHeader';
 import { StatCard } from '../../../components/ui/StatCard';
@@ -31,12 +30,7 @@ export function AdminDashboardScreen() {
   const { data, isLoading, refetch, isRefetching } = useDashboard();
   const payNow = usePayNow();
   const navigation = useNavigation<any>();
-  const { data: notifData } = useQuery({
-    queryKey: ['notifications'],
-    queryFn: getNotificationsApi,
-    refetchInterval: 60_000,
-  });
-  const unreadCount = notifData?.unreadCount ?? 0;
+  const unreadCount = useNotificationCount();
 
   const dashboard = data as AdminDashboard | undefined;
 

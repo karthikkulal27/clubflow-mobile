@@ -7,8 +7,8 @@ import {
   Platform,
   ScrollView,
   TouchableOpacity,
-  Alert,
 } from 'react-native';
+import Toast from 'react-native-toast-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -48,7 +48,7 @@ export function LoginScreen() {
       const msg =
         (err as { response?: { data?: { message?: string } } })?.response?.data?.message ??
         'Login failed. Please check your credentials.';
-      Alert.alert('Login Failed', msg);
+      Toast.show({ type: 'error', text1: 'Login Failed', text2: msg });
     }
   };
 

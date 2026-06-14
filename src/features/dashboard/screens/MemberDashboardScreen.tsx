@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Alert, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useQuery } from '@tanstack/react-query';
+import { useNavigation } from '@react-navigation/native';
+import { getNotificationsApi } from '../../notifications/api/notifications.api';
 import { ScreenWrapper } from '../../../components/layout/ScreenWrapper';
 import { SectionHeader } from '../../../components/layout/SectionHeader';
 import { Card } from '../../../components/ui/Card';
@@ -29,7 +32,14 @@ export function MemberDashboardScreen() {
   const { data, isLoading, refetch, isRefetching } = useDashboard();
   const { data: memberProfile } = useMember(user?.id ?? '');
   const payNow = usePayNow();
+  const navigation = useNavigation<any>();
   const [showNudge, setShowNudge] = useState(!nudgeDismissedThisSession);
+  const { data: notifData } = useQuery({
+    queryKey: ['notifications'],
+    queryFn: getNotificationsApi,
+    refetchInterval: 60_000,
+  });
+  const unreadCount = notifData?.unreadCount ?? 0;
 
   const profileCompletion = memberProfile?.profileCompletion ?? 0;
 
@@ -60,12 +70,22 @@ export function MemberDashboardScreen() {
           <Text style={[styles.greeting, { color: theme.text.secondary }]}>Hello,</Text>
           <Text style={[styles.name, { color: theme.text.primary }]}>{user?.name}</Text>
         </View>
-        <Ionicons
-          name="log-out-outline"
-          size={22}
-          color={theme.text.secondary}
-          onPress={handleLogout}
-        />
+        <View style={styles.topActions}>
+          <TouchableOpacity onPress={() => navigation.navigate('More', { screen: 'Notifications' })} style={styles.bellBtn}>
+            <Ionicons name="notifications-outline" size={22} color={theme.text.secondary} />
+            {unreadCount > 0 && (
+              <View style={[styles.badge, { backgroundColor: '#ef4444' }]}>
+                <Text style={styles.badgeText}>{unreadCount > 99 ? '99+' : unreadCount}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+          <Ionicons
+            name="log-out-outline"
+            size={22}
+            color={theme.text.secondary}
+            onPress={handleLogout}
+          />
+        </View>
       </View>
 
       {isLoading ? (
@@ -226,6 +246,10 @@ const styles = StyleSheet.create({
   },
   greeting: { fontSize: fontSize.sm },
   name: { fontSize: fontSize.xl, fontWeight: fontWeight.bold },
+  topActions: { flexDirection: 'row', alignItems: 'center', gap: spacing[3] },
+  bellBtn: { position: 'relative' },
+  badge: { position: 'absolute', top: -4, right: -6, minWidth: 16, height: 16, borderRadius: 8, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 3 },
+  badgeText: { color: '#fff', fontSize: 9, fontWeight: '700' },
   section: { marginTop: spacing[5] },
   announcementRow: { flexDirection: 'row', gap: spacing[3] },
   announcementIcon: {

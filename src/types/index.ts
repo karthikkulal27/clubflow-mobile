@@ -175,7 +175,8 @@ export type NotificationType =
   | 'NEW_ANNOUNCEMENT'
   | 'NEW_EVENT'
   | 'EVENT_REMINDER'
-  | 'EXPENSE_ADDED';
+  | 'EXPENSE_ADDED'
+  | 'EVENT_RSVP';
 
 export interface AppNotification {
   id: string;

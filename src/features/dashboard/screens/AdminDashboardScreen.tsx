@@ -1,7 +1,9 @@
 import React from 'react';
-import { View, Text, StyleSheet, Alert } from 'react-native';
+import { View, Text, StyleSheet, Alert, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import { useQuery } from '@tanstack/react-query';
+import { getNotificationsApi } from '../../notifications/api/notifications.api';
 import { ScreenWrapper } from '../../../components/layout/ScreenWrapper';
 import { SectionHeader } from '../../../components/layout/SectionHeader';
 import { StatCard } from '../../../components/ui/StatCard';
@@ -29,6 +31,12 @@ export function AdminDashboardScreen() {
   const { data, isLoading, refetch, isRefetching } = useDashboard();
   const payNow = usePayNow();
   const navigation = useNavigation<any>();
+  const { data: notifData } = useQuery({
+    queryKey: ['notifications'],
+    queryFn: getNotificationsApi,
+    refetchInterval: 60_000,
+  });
+  const unreadCount = notifData?.unreadCount ?? 0;
 
   const dashboard = data as AdminDashboard | undefined;
 
@@ -56,6 +64,14 @@ export function AdminDashboardScreen() {
           <View style={[styles.adminBadge, { backgroundColor: theme.primaryLight }]}>
             <Text style={[styles.adminBadgeText, { color: theme.primary }]}>Admin</Text>
           </View>
+          <TouchableOpacity onPress={() => navigation.navigate('More', { screen: 'Notifications' })} style={styles.bellBtn}>
+            <Ionicons name="notifications-outline" size={22} color={theme.text.secondary} />
+            {unreadCount > 0 && (
+              <View style={[styles.badge, { backgroundColor: theme.danger }]}>
+                <Text style={styles.badgeText}>{unreadCount > 99 ? '99+' : unreadCount}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
           <Ionicons
             name="log-out-outline"
             size={22}
@@ -196,6 +212,9 @@ const styles = StyleSheet.create({
   topActions: { flexDirection: 'row', alignItems: 'center', gap: spacing[3] },
   adminBadge: { paddingHorizontal: spacing[3], paddingVertical: 4, borderRadius: 100 },
   adminBadgeText: { fontSize: fontSize.xs, fontWeight: fontWeight.semibold },
+  bellBtn: { position: 'relative' },
+  badge: { position: 'absolute', top: -4, right: -6, minWidth: 16, height: 16, borderRadius: 8, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 3 },
+  badgeText: { color: '#fff', fontSize: 9, fontWeight: '700' },
   statGrid: { flexDirection: 'row', gap: spacing[3] },
   section: { marginTop: spacing[6] },
   eventCard: { marginBottom: spacing[3] },

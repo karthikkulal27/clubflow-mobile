@@ -30,6 +30,7 @@ function notificationMeta(type: NotificationType): {
     case 'NEW_EVENT': return { icon: 'calendar-outline', color: '#3b82f6', bgKey: 'primaryLight' };
     case 'EVENT_REMINDER': return { icon: 'alarm-outline', color: '#f97316', bgKey: 'warningLight' };
     case 'EXPENSE_ADDED': return { icon: 'receipt-outline', color: '#ef4444', bgKey: 'dangerLight' };
+    case 'EVENT_RSVP': return { icon: 'people-outline', color: '#3b82f6', bgKey: 'primaryLight' };
     default: return { icon: 'notifications-outline', color: '#3b82f6', bgKey: 'primaryLight' };
   }
 }

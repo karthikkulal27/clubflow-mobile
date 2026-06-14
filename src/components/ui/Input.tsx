@@ -75,6 +75,8 @@ export function Input({
           placeholderTextColor={theme.text.tertiary}
           secureTextEntry={isSecure}
           autoCapitalize="none"
+          autoCorrect={false}
+          spellCheck={false}
           {...props}
         />
 

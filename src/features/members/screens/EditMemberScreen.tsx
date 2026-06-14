@@ -28,6 +28,7 @@ const schema = z.object({
   bloodGroup: z.enum(BLOOD_GROUPS).or(z.literal('')).optional(),
   emergencyContact: z.string().min(10).max(15).or(z.literal('')).optional(),
   role: z.enum(['ADMIN', 'MEMBER']),
+  newPassword: z.string().min(6, 'Password must be at least 6 characters').or(z.literal('')).optional(),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -135,6 +136,7 @@ export function EditMemberScreen({ userId, onBack, onSuccess }: EditMemberScreen
       bloodGroup: (data.bloodGroup as typeof BLOOD_GROUPS[number]) || null,
       emergencyContact: data.emergencyContact || null,
       role: data.role,
+      ...(data.newPassword ? { password: data.newPassword } : {}),
     };
 
     updateMember.mutate(payload, {
@@ -289,6 +291,26 @@ export function EditMemberScreen({ userId, onBack, onSuccess }: EditMemberScreen
               Admins can manage members, dues, expenses and events.
             </Text>
           </View>
+
+          <Text style={[styles.sectionTitle, { color: theme.text.secondary }]}>Reset Password</Text>
+
+          <Controller
+            control={control}
+            name="newPassword"
+            render={({ field: { value, onChange, onBlur } }) => (
+              <Input
+                label="New Password (optional)"
+                placeholder="Leave blank to keep current password"
+                isPassword
+                value={value}
+                onChangeText={onChange}
+                onBlur={onBlur}
+                error={errors.newPassword?.message}
+                leftIcon="lock-closed-outline"
+                hint="Only fill this if you want to change the member's password"
+              />
+            )}
+          />
 
           <Button
             title="Save Changes"

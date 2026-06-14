@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  View, Text, StyleSheet, ScrollView,
+  View, Text, StyleSheet, ScrollView, RefreshControl,
   TouchableOpacity, ActivityIndicator, Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -55,7 +55,7 @@ interface MemberDetailScreenProps {
 
 export function MemberDetailScreen({ userId, onBack, onEdit, onViewPayments }: MemberDetailScreenProps) {
   const { theme } = useTheme();
-  const { data: member, isLoading, refetch } = useMember(userId);
+  const { data: member, isLoading, refetch, isRefetching } = useMember(userId);
   const deactivate = useDeactivateMember();
   const reactivate = useReactivateMember();
   const deleteMember = useDeleteMember();
@@ -148,7 +148,11 @@ export function MemberDetailScreen({ userId, onBack, onEdit, onViewPayments }: M
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.body} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.body}
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
+      >
         {/* Hero */}
         <View style={[styles.hero, { backgroundColor: theme.surface }]}>
           <Avatar name={member.name} uri={member.avatarUrl} size={80} />

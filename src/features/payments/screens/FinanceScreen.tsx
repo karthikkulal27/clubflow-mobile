@@ -87,9 +87,11 @@ export function FinanceScreen({ onManagePricing, onSpecialCollections, onExpense
   const [year] = useState(now.getFullYear());
   const [activeTab, setActiveTab] = useState<Tab>('paid');
 
-  const { data: payments, isLoading, isError } = usePaymentsList(month, year);
-  const { data: stats } = usePaymentStats(month, year);
+  const { data: payments, isLoading, isError, refetch, isRefetching } = usePaymentsList(month, year);
+  const { data: stats, refetch: refetchStats } = usePaymentStats(month, year);
   const markPaid = useMarkPaymentPaid();
+
+  const handleRefresh = () => { refetch(); refetchStats(); };
 
   const paid = (payments?.data ?? []).filter((p) => p.status === 'PAID');
   const pending = (payments?.data ?? []).filter((p) => p.status === 'PENDING');
@@ -160,6 +162,8 @@ export function FinanceScreen({ onManagePricing, onSpecialCollections, onExpense
         maxToRenderPerBatch={15}
         windowSize={5}
         initialNumToRender={15}
+        refreshing={isRefetching}
+        onRefresh={handleRefresh}
         ListHeaderComponent={
           <>
             {/* Expenses shortcut */}

@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  View, Text, StyleSheet, ScrollView,
+  View, Text, StyleSheet, ScrollView, RefreshControl,
   KeyboardAvoidingView, Platform, TouchableOpacity,
 } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
@@ -32,7 +32,7 @@ export function ClubSettingsScreen({ onBack }: ClubSettingsScreenProps) {
   const { theme } = useTheme();
   const queryClient = useQueryClient();
 
-  const { data: club, isLoading } = useQuery({
+  const { data: club, isLoading, refetch, isRefetching } = useQuery({
     queryKey: ['club'],
     queryFn: getClubApi,
   });
@@ -76,6 +76,7 @@ export function ClubSettingsScreen({ onBack }: ClubSettingsScreenProps) {
         contentContainerStyle={styles.body}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
       >
         {/* Club Info section */}
         <Card padding={spacing[4]}>

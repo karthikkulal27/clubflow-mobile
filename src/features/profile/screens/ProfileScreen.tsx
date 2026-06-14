@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView,
+  View, Text, StyleSheet, ScrollView, RefreshControl,
   TouchableOpacity, Alert, KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
@@ -99,10 +99,12 @@ export function ProfileScreen({ onBack }: ProfileScreenProps) {
   const { data: memberProfile, refetch: refetchProfile } = useMember(user?.id ?? '');
   const updateProfile = useUpdateOwnProfile();
 
-  const { data: club } = useQuery({
+  const { data: club, refetch: refetchClub } = useQuery({
     queryKey: ['club'],
     queryFn: getClubApi,
   });
+
+  const handleRefresh = () => { refetchProfile(); refetchClub(); };
 
   const profileCompletion = memberProfile?.profileCompletion ?? 0;
   const pctColor = profileCompletion === 100 ? theme.success : profileCompletion >= 60 ? theme.warning : theme.danger;
@@ -185,7 +187,11 @@ export function ProfileScreen({ onBack }: ProfileScreenProps) {
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.body} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.body}
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={false} onRefresh={handleRefresh} />}
+      >
         {/* Avatar hero */}
         <View style={[styles.hero, { backgroundColor: theme.surface }]}>
           <Avatar name={user?.name ?? '?'} uri={memberProfile?.avatarUrl} size={80} />

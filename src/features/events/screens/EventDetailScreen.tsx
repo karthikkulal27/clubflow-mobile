@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity,
-  ActivityIndicator, ScrollView, Alert,
+  ActivityIndicator, ScrollView, RefreshControl, Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -30,7 +30,7 @@ interface EventDetailScreenProps {
 export function EventDetailScreen({ eventId, onBack, onEdit }: EventDetailScreenProps) {
   const { theme } = useTheme();
   const { isAdmin } = useAuth();
-  const { data: event, isLoading } = useEventDetail(eventId);
+  const { data: event, isLoading, refetch, isRefetching } = useEventDetail(eventId);
   const rsvp = useRsvp(eventId);
 
   const handleRsvp = (status: RsvpStatus) => {
@@ -68,7 +68,10 @@ export function EventDetailScreen({ eventId, onBack, onEdit }: EventDetailScreen
         )}
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
+      >
         {/* Cover / Icon */}
         <View style={[styles.cover, { backgroundColor: theme.primaryLight }]}>
           <Ionicons name="calendar" size={48} color={theme.primary} />

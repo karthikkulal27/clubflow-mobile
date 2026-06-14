@@ -71,7 +71,7 @@ interface MemberPaymentsScreenProps {
 
 export function MemberPaymentsScreen({ userId, memberName, onBack }: MemberPaymentsScreenProps) {
   const { theme } = useTheme();
-  const { data: payments, isLoading } = useMemberPayments(userId);
+  const { data: payments, isLoading, refetch, isRefetching } = useMemberPayments(userId);
 
   const regularDues = (payments ?? []).filter((p) => !p.specialCollectionId);
   const specialCharges = (payments ?? []).filter((p) => !!p.specialCollectionId);
@@ -101,6 +101,8 @@ export function MemberPaymentsScreen({ userId, memberName, onBack }: MemberPayme
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
+          refreshing={isRefetching}
+          onRefresh={refetch}
           ListHeaderComponent={
             <View>
               {/* Summary */}

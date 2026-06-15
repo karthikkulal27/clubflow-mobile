@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
-  View, Text, StyleSheet, FlatList,
+  View, Text, StyleSheet, SectionList,
   TouchableOpacity, ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -15,7 +15,7 @@ import {
 import { useTheme } from '../../../hooks/useTheme';
 import { fontSize, fontWeight } from '../../../theme/typography';
 import { spacing, radius } from '../../../theme/spacing';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, isToday, isYesterday, isThisWeek } from 'date-fns';
 import type { AppNotification, NotificationType } from '../../../types';
 
 function notificationMeta(type: NotificationType): {
@@ -103,6 +103,20 @@ export function NotificationsScreen({ onBack }: NotificationsScreenProps) {
   const notifications = data?.notifications ?? [];
   const unreadCount = data?.unreadCount ?? 0;
 
+  const sections = useMemo(() => {
+    const groups: Record<string, AppNotification[]> = { Today: [], Yesterday: [], 'This Week': [], Earlier: [] };
+    for (const n of notifications) {
+      const d = new Date(n.createdAt);
+      if (isToday(d)) groups['Today'].push(n);
+      else if (isYesterday(d)) groups['Yesterday'].push(n);
+      else if (isThisWeek(d)) groups['This Week'].push(n);
+      else groups['Earlier'].push(n);
+    }
+    return Object.entries(groups)
+      .filter(([, items]) => items.length > 0)
+      .map(([title, data]) => ({ title, data }));
+  }, [notifications]);
+
   return (
     <ScreenWrapper scrollable={false} padded={false}>
       <View style={[styles.header, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
@@ -134,8 +148,8 @@ export function NotificationsScreen({ onBack }: NotificationsScreenProps) {
           <ActivityIndicator size="large" color={theme.primary} />
         </View>
       ) : (
-        <FlatList
-          data={notifications}
+        <SectionList
+          sections={sections}
           keyExtractor={(item) => item.id}
           showsVerticalScrollIndicator={false}
           refreshing={isRefetching}
@@ -144,6 +158,7 @@ export function NotificationsScreen({ onBack }: NotificationsScreenProps) {
           maxToRenderPerBatch={15}
           windowSize={5}
           initialNumToRender={15}
+          stickySectionHeadersEnabled={false}
           ListEmptyComponent={
             <EmptyState
               icon="notifications-outline"
@@ -151,6 +166,11 @@ export function NotificationsScreen({ onBack }: NotificationsScreenProps) {
               subtitle="You're all caught up!"
             />
           }
+          renderSectionHeader={({ section }) => (
+            <View style={[styles.sectionHeader, { backgroundColor: theme.background }]}>
+              <Text style={[styles.sectionTitle, { color: theme.text.tertiary }]}>{section.title}</Text>
+            </View>
+          )}
           renderItem={({ item }) => (
             <NotificationRow item={item} onRead={(id) => markRead.mutate(id)} />
           )}
@@ -202,4 +222,6 @@ const styles = StyleSheet.create({
   notifBody: { fontSize: fontSize.xs, lineHeight: 18 },
   notifTime: { fontSize: fontSize.xs },
   unreadDot: { width: 8, height: 8, borderRadius: 4, marginTop: 6 },
+  sectionHeader: { paddingHorizontal: spacing[4], paddingVertical: spacing[2] },
+  sectionTitle: { fontSize: fontSize.xs, fontWeight: fontWeight.semibold, textTransform: 'uppercase', letterSpacing: 0.8 },
 });

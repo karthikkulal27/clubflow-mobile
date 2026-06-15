@@ -29,6 +29,14 @@ export async function createExpenseApi(payload: {
   return data.data;
 }
 
+export async function updateExpenseApi(
+  expenseId: string,
+  payload: { title: string; amount: number; category?: string; expenseDate: string; description?: string },
+): Promise<Expense> {
+  const { data } = await api.patch<ApiResponse<Expense>>(`/expenses/${expenseId}`, payload);
+  return data.data;
+}
+
 export async function deleteExpenseApi(expenseId: string): Promise<void> {
   await api.delete(`/expenses/${expenseId}`);
 }

@@ -39,7 +39,12 @@ const editSchema = z.object({
   dateOfBirth: z.string().optional(),
   bloodGroup: z.enum(BLOOD_GROUPS).or(z.literal('')).optional(),
   emergencyContact: z.string().min(10).max(15).or(z.literal('')).optional(),
-});
+  newPassword: z.string().min(6).or(z.literal('')).optional(),
+  confirmPassword: z.string().or(z.literal('')).optional(),
+}).refine(
+  (d) => !d.newPassword || d.newPassword === d.confirmPassword,
+  { message: 'Passwords do not match', path: ['confirmPassword'] },
+);
 type EditForm = z.infer<typeof editSchema>;
 
 function InfoRow({ icon, label, value }: {
@@ -143,6 +148,7 @@ export function ProfileScreen({ onBack }: ProfileScreenProps) {
         dateOfBirth: data.dateOfBirth || null,
         bloodGroup: (data.bloodGroup as typeof BLOOD_GROUPS[number]) || null,
         emergencyContact: data.emergencyContact || null,
+        ...(data.newPassword ? { password: data.newPassword } : {}),
       },
       {
         onSuccess: () => {
@@ -295,6 +301,26 @@ export function ProfileScreen({ onBack }: ProfileScreenProps) {
                 <Input label="Emergency Contact (optional)" value={value} onChangeText={onChange}
                   onBlur={onBlur} keyboardType="phone-pad"
                   error={errors.emergencyContact?.message} leftIcon="alert-circle-outline" />
+              )}
+            />
+
+            <Text style={[styles.sectionTitle, { color: theme.text.secondary }]}>Change Password</Text>
+            <Controller
+              control={control}
+              name="newPassword"
+              render={({ field: { value, onChange, onBlur } }) => (
+                <Input label="New Password (optional)" value={value} onChangeText={onChange} onBlur={onBlur}
+                  secureTextEntry leftIcon="lock-closed-outline" placeholder="Leave blank to keep current"
+                  error={errors.newPassword?.message} />
+              )}
+            />
+            <Controller
+              control={control}
+              name="confirmPassword"
+              render={({ field: { value, onChange, onBlur } }) => (
+                <Input label="Confirm Password" value={value} onChangeText={onChange} onBlur={onBlur}
+                  secureTextEntry leftIcon="lock-closed-outline" placeholder="Repeat new password"
+                  error={errors.confirmPassword?.message} />
               )}
             />
 

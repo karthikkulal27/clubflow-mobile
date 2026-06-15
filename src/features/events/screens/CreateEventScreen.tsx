@@ -18,11 +18,16 @@ import { fontSize, fontWeight } from '../../../theme/typography';
 import { spacing, radius } from '../../../theme/spacing';
 import { createEventApi, updateEventApi } from '../api/events.api';
 
+const todayStr = new Date().toISOString().slice(0, 10);
+
 const schema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters'),
   location: z.string().optional(),
   description: z.string().optional(),
-  date: z.string().min(1, 'Select a date'),
+  date: z.string().min(1, 'Select a date').refine(
+    (d) => d >= todayStr,
+    'Event date cannot be in the past',
+  ),
   startTime: z.string().min(1, 'Select a start time'),
   endTime: z.string().optional(),
 });

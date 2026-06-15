@@ -107,13 +107,39 @@ function FinanceNavigator() {
       </FinanceStack.Screen>
       <FinanceStack.Screen name="Expenses">
         {({ navigation }) => (
-          <ExpensesListScreen onBack={() => navigation.goBack()} onAdd={() => navigation.navigate('AddExpense')} />
+          <ExpensesListScreen
+            onBack={() => navigation.goBack()}
+            onAdd={() => navigation.navigate('AddExpense')}
+            onEdit={(item) => navigation.navigate('EditExpense', {
+              expenseId: item.id,
+              initialValues: {
+                title: item.title,
+                amount: String(Number(item.amount)),
+                category: item.category ?? undefined,
+                expenseDate: item.expenseDate.slice(0, 10),
+                description: item.description ?? undefined,
+              },
+            })}
+          />
         )}
       </FinanceStack.Screen>
       <FinanceStack.Screen name="AddExpense">
         {({ navigation }) => (
           <AddExpenseScreen onBack={() => navigation.goBack()} onSuccess={() => navigation.goBack()} />
         )}
+      </FinanceStack.Screen>
+      <FinanceStack.Screen name="EditExpense">
+        {({ route, navigation }) => {
+          const params = route.params as { expenseId: string; initialValues: any };
+          return (
+            <AddExpenseScreen
+              onBack={() => navigation.goBack()}
+              onSuccess={() => navigation.goBack()}
+              expenseId={params.expenseId}
+              initialValues={params.initialValues}
+            />
+          );
+        }}
       </FinanceStack.Screen>
       <FinanceStack.Screen name="DuesPlans">
         {({ navigation }) => (
@@ -226,13 +252,30 @@ function MoreNavigator() {
       </MoreStack.Screen>
       <MoreStack.Screen name="Announcements">
         {({ navigation }) => (
-          <AnnouncementsScreen onBack={() => navigation.goBack()} onAdd={() => navigation.navigate('CreateAnnouncement')} />
+          <AnnouncementsScreen
+            onBack={() => navigation.goBack()}
+            onAdd={() => navigation.navigate('CreateAnnouncement')}
+            onEdit={(item) => navigation.navigate('EditAnnouncement', { announcementId: item.id, initialValues: { title: item.title, body: item.body } })}
+          />
         )}
       </MoreStack.Screen>
       <MoreStack.Screen name="CreateAnnouncement">
         {({ navigation }) => (
           <CreateAnnouncementScreen onBack={() => navigation.goBack()} onSuccess={() => navigation.goBack()} />
         )}
+      </MoreStack.Screen>
+      <MoreStack.Screen name="EditAnnouncement">
+        {({ route, navigation }) => {
+          const params = route.params as { announcementId: string; initialValues: { title: string; body: string } };
+          return (
+            <CreateAnnouncementScreen
+              onBack={() => navigation.goBack()}
+              onSuccess={() => navigation.goBack()}
+              announcementId={params.announcementId}
+              initialValues={params.initialValues}
+            />
+          );
+        }}
       </MoreStack.Screen>
       <MoreStack.Screen name="Notifications">
         {({ navigation }) => <NotificationsScreen onBack={() => navigation.goBack()} />}

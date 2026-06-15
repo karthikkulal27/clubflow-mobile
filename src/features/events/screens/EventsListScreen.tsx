@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View, Text, StyleSheet, FlatList,
-  TouchableOpacity, ActivityIndicator,
+  TouchableOpacity, ActivityIndicator, TextInput,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ScreenWrapper } from '../../../components/layout/ScreenWrapper';
@@ -97,8 +97,21 @@ export function EventsListScreen({ onEventPress, onAdd }: EventsListScreenProps)
   const { theme } = useTheme();
   const { isAdmin } = useAuth();
   const [filter, setFilter] = useState<Filter>('upcoming');
+  const [search, setSearch] = useState('');
 
   const { data, isLoading, refetch, isRefetching } = useEvents(filter === 'upcoming');
+
+  const filtered = useMemo(() => {
+    const all = data?.data ?? [];
+    if (!search.trim()) return all;
+    const q = search.toLowerCase();
+    return all.filter(
+      (e) =>
+        e.title.toLowerCase().includes(q) ||
+        e.location?.toLowerCase().includes(q) ||
+        e.description?.toLowerCase().includes(q),
+    );
+  }, [data, search]);
 
   return (
     <ScreenWrapper scrollable={false} padded={false}>
@@ -107,6 +120,25 @@ export function EventsListScreen({ onEventPress, onAdd }: EventsListScreenProps)
         {isAdmin && (
           <TouchableOpacity style={[styles.addBtn, { backgroundColor: theme.primary }]} onPress={onAdd}>
             <Ionicons name="add" size={20} color="#fff" />
+          </TouchableOpacity>
+        )}
+      </View>
+
+      {/* Search bar */}
+      <View style={[styles.searchRow, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
+        <Ionicons name="search-outline" size={16} color={theme.text.tertiary} style={styles.searchIcon} />
+        <TextInput
+          style={[styles.searchInput, { color: theme.text.primary }]}
+          placeholder="Search events..."
+          placeholderTextColor={theme.text.tertiary}
+          value={search}
+          onChangeText={setSearch}
+          autoCorrect={false}
+          autoCapitalize="none"
+        />
+        {search.length > 0 && (
+          <TouchableOpacity onPress={() => setSearch('')}>
+            <Ionicons name="close-circle" size={16} color={theme.text.tertiary} />
           </TouchableOpacity>
         )}
       </View>
@@ -140,7 +172,7 @@ export function EventsListScreen({ onEventPress, onAdd }: EventsListScreenProps)
         </View>
       ) : (
         <FlatList
-          data={data?.data ?? []}
+          data={filtered}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.list}
           showsVerticalScrollIndicator={false}
@@ -149,8 +181,8 @@ export function EventsListScreen({ onEventPress, onAdd }: EventsListScreenProps)
           ListEmptyComponent={
             <EmptyState
               icon="calendar-outline"
-              title={filter === 'upcoming' ? 'No upcoming events' : 'No events yet'}
-              subtitle="Events created by your club admin will appear here"
+              title={search ? 'No events match your search' : filter === 'upcoming' ? 'No upcoming events' : 'No events yet'}
+              subtitle={search ? 'Try a different keyword' : 'Events created by your club admin will appear here'}
             />
           }
           renderItem={({ item }) => (
@@ -173,6 +205,16 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: fontSize.xl, fontWeight: fontWeight.bold },
   addBtn: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+  searchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing[4],
+    paddingVertical: spacing[2] + 2,
+    borderBottomWidth: 1,
+    gap: spacing[2],
+  },
+  searchIcon: { flexShrink: 0 },
+  searchInput: { flex: 1, fontSize: fontSize.sm, paddingVertical: spacing[1] },
   filterRow: {
     flexDirection: 'row',
     borderBottomWidth: 1,

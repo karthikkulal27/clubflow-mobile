@@ -14,7 +14,7 @@ import { Button } from '../../../components/ui/Button';
 import { useTheme } from '../../../hooks/useTheme';
 import { fontSize, fontWeight } from '../../../theme/typography';
 import { spacing, radius } from '../../../theme/spacing';
-import { createAnnouncementApi, publishAnnouncementApi } from '../api/announcements.api';
+import { createAnnouncementApi, publishAnnouncementApi, updateAnnouncementApi } from '../api/announcements.api';
 
 const schema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters'),
@@ -26,22 +26,28 @@ type FormData = z.infer<typeof schema>;
 interface CreateAnnouncementScreenProps {
   onBack: () => void;
   onSuccess: () => void;
+  announcementId?: string;
+  initialValues?: { title: string; body: string };
 }
 
-export function CreateAnnouncementScreen({ onBack, onSuccess }: CreateAnnouncementScreenProps) {
+export function CreateAnnouncementScreen({ onBack, onSuccess, announcementId, initialValues }: CreateAnnouncementScreenProps) {
   const { theme } = useTheme();
   const queryClient = useQueryClient();
+  const isEditing = !!announcementId;
   const [publishNow, setPublishNow] = React.useState(true);
 
   const { control, handleSubmit, watch, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { title: '', body: '' },
+    defaultValues: { title: initialValues?.title ?? '', body: initialValues?.body ?? '' },
   });
 
   const bodyValue = watch('body');
 
   const mutation = useMutation({
     mutationFn: async (data: FormData) => {
+      if (isEditing) {
+        return updateAnnouncementApi(announcementId, data);
+      }
       const announcement = await createAnnouncementApi(data);
       if (publishNow) {
         await publishAnnouncementApi(announcement.id);
@@ -52,13 +58,13 @@ export function CreateAnnouncementScreen({ onBack, onSuccess }: CreateAnnounceme
       queryClient.invalidateQueries({ queryKey: ['announcements'] });
       Toast.show({
         type: 'success',
-        text1: publishNow ? 'Announcement published' : 'Draft saved',
-        text2: publishNow ? 'All members will be notified' : 'You can publish it later',
+        text1: isEditing ? 'Announcement updated' : publishNow ? 'Announcement published' : 'Draft saved',
+        text2: isEditing ? '' : publishNow ? 'All members will be notified' : 'You can publish it later',
       });
       onSuccess();
     },
     onError: (err: any) => {
-      const msg = err?.response?.data?.message ?? 'Failed to create announcement';
+      const msg = err?.response?.data?.message ?? (isEditing ? 'Failed to update announcement' : 'Failed to create announcement');
       Toast.show({ type: 'error', text1: 'Error', text2: msg });
     },
   });
@@ -72,7 +78,7 @@ export function CreateAnnouncementScreen({ onBack, onSuccess }: CreateAnnounceme
         <TouchableOpacity onPress={onBack} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={22} color={theme.text.primary} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: theme.text.primary }]}>New Announcement</Text>
+        <Text style={[styles.headerTitle, { color: theme.text.primary }]}>{isEditing ? 'Edit Announcement' : 'New Announcement'}</Text>
         <View style={styles.backBtn} />
       </View>
 
@@ -81,33 +87,35 @@ export function CreateAnnouncementScreen({ onBack, onSuccess }: CreateAnnounceme
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* Publish status banner */}
-        <View style={[
-          styles.publishBanner,
-          { backgroundColor: publishNow ? theme.primaryLight : theme.surface, borderColor: publishNow ? theme.primary : theme.border },
-        ]}>
-          <View style={styles.publishBannerLeft}>
-            <Ionicons
-              name={publishNow ? 'megaphone' : 'save-outline'}
-              size={20}
-              color={publishNow ? theme.primary : theme.text.secondary}
-            />
-            <View>
-              <Text style={[styles.publishTitle, { color: publishNow ? theme.primary : theme.text.primary }]}>
-                {publishNow ? 'Publish Immediately' : 'Save as Draft'}
-              </Text>
-              <Text style={[styles.publishSub, { color: theme.text.tertiary }]}>
-                {publishNow ? 'Members will be notified via push' : 'Publish manually from the list'}
-              </Text>
+        {/* Publish status banner — hidden when editing */}
+        {!isEditing && (
+          <View style={[
+            styles.publishBanner,
+            { backgroundColor: publishNow ? theme.primaryLight : theme.surface, borderColor: publishNow ? theme.primary : theme.border },
+          ]}>
+            <View style={styles.publishBannerLeft}>
+              <Ionicons
+                name={publishNow ? 'megaphone' : 'save-outline'}
+                size={20}
+                color={publishNow ? theme.primary : theme.text.secondary}
+              />
+              <View>
+                <Text style={[styles.publishTitle, { color: publishNow ? theme.primary : theme.text.primary }]}>
+                  {publishNow ? 'Publish Immediately' : 'Save as Draft'}
+                </Text>
+                <Text style={[styles.publishSub, { color: theme.text.tertiary }]}>
+                  {publishNow ? 'Members will be notified via push' : 'Publish manually from the list'}
+                </Text>
+              </View>
             </View>
+            <Switch
+              value={publishNow}
+              onValueChange={setPublishNow}
+              trackColor={{ false: theme.border, true: theme.primary }}
+              thumbColor="#fff"
+            />
           </View>
-          <Switch
-            value={publishNow}
-            onValueChange={setPublishNow}
-            trackColor={{ false: theme.border, true: theme.primary }}
-            thumbColor="#fff"
-          />
-        </View>
+        )}
 
         <Controller
           control={control}
@@ -151,7 +159,7 @@ export function CreateAnnouncementScreen({ onBack, onSuccess }: CreateAnnounceme
         </View>
 
         <Button
-          title={publishNow ? 'Publish Announcement' : 'Save Draft'}
+          title={isEditing ? 'Save Changes' : publishNow ? 'Publish Announcement' : 'Save Draft'}
           fullWidth
           loading={mutation.isPending}
           onPress={handleSubmit((data) => mutation.mutate(data))}

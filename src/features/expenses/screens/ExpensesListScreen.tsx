@@ -35,10 +35,12 @@ function ExpenseCard({
   item,
   isAdmin,
   onDelete,
+  onEdit,
 }: {
   item: Expense;
   isAdmin: boolean;
   onDelete: (id: string) => void;
+  onEdit?: (item: Expense) => void;
 }) {
   const { theme } = useTheme();
   const categoryColor = getCategoryColor(item.category);
@@ -67,12 +69,14 @@ function ExpenseCard({
             −₹{Number(item.amount).toLocaleString('en-IN')}
           </Text>
           {isAdmin && (
-            <TouchableOpacity
-              onPress={() => onDelete(item.id)}
-              style={styles.deleteBtn}
-            >
-              <Ionicons name="trash-outline" size={16} color={theme.danger} />
-            </TouchableOpacity>
+            <View style={styles.adminActions}>
+              <TouchableOpacity onPress={() => onEdit?.(item)}>
+                <Ionicons name="pencil-outline" size={16} color={theme.primary} />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => onDelete(item.id)}>
+                <Ionicons name="trash-outline" size={16} color={theme.danger} />
+              </TouchableOpacity>
+            </View>
           )}
         </View>
       </View>
@@ -92,9 +96,10 @@ function ExpenseCard({
 interface ExpensesListScreenProps {
   onAdd?: () => void;
   onBack?: () => void;
+  onEdit?: (item: Expense) => void;
 }
 
-export function ExpensesListScreen({ onAdd, onBack }: ExpensesListScreenProps) {
+export function ExpensesListScreen({ onAdd, onBack, onEdit }: ExpensesListScreenProps) {
   const { theme } = useTheme();
   const { isAdmin } = useAuth();
   const queryClient = useQueryClient();
@@ -169,7 +174,7 @@ export function ExpensesListScreen({ onAdd, onBack }: ExpensesListScreenProps) {
             />
           }
           renderItem={({ item }) => (
-            <ExpenseCard item={item} isAdmin={isAdmin} onDelete={handleDelete} />
+            <ExpenseCard item={item} isAdmin={isAdmin} onDelete={handleDelete} onEdit={onEdit} />
           )}
         />
       )}
@@ -215,7 +220,7 @@ const styles = StyleSheet.create({
   badge: { marginTop: 2 },
   amountBlock: { alignItems: 'flex-end', gap: spacing[2] },
   amount: { fontSize: fontSize.base, fontWeight: fontWeight.bold },
-  deleteBtn: { padding: spacing[1] },
+  adminActions: { flexDirection: 'row', gap: spacing[3], alignItems: 'center' },
   reasonRow: { flexDirection: 'row', alignItems: 'flex-start', marginTop: spacing[2] },
   reasonLabel: { fontSize: fontSize.xs, fontWeight: fontWeight.medium, flexShrink: 0 },
   reasonText: { fontSize: fontSize.xs, flex: 1, lineHeight: 18 },

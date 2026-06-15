@@ -15,7 +15,7 @@ import { DatePickerInput } from '../../../components/ui/DatePickerInput';
 import { useTheme } from '../../../hooks/useTheme';
 import { fontSize, fontWeight } from '../../../theme/typography';
 import { spacing, radius } from '../../../theme/spacing';
-import { createExpenseApi } from '../api/expenses.api';
+import { createExpenseApi, updateExpenseApi } from '../api/expenses.api';
 import { format } from 'date-fns';
 
 const CATEGORIES = [
@@ -46,41 +46,48 @@ type FormData = z.infer<typeof schema>;
 interface AddExpenseScreenProps {
   onBack: () => void;
   onSuccess: () => void;
+  expenseId?: string;
+  initialValues?: { title: string; amount: string; category?: string; expenseDate: string; description?: string };
 }
 
-export function AddExpenseScreen({ onBack, onSuccess }: AddExpenseScreenProps) {
+export function AddExpenseScreen({ onBack, onSuccess, expenseId, initialValues }: AddExpenseScreenProps) {
   const { theme } = useTheme();
   const queryClient = useQueryClient();
-  const [selectedCategory, setSelectedCategory] = React.useState<Category | null>(null);
+  const isEditing = !!expenseId;
+  const [selectedCategory, setSelectedCategory] = React.useState<Category | null>(
+    (initialValues?.category as Category) ?? null,
+  );
 
   const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
-      title: '',
-      amount: '',
-      category: '',
-      expenseDate: format(new Date(), 'yyyy-MM-dd'),
-      description: '',
+      title: initialValues?.title ?? '',
+      amount: initialValues?.amount ?? '',
+      category: initialValues?.category ?? '',
+      expenseDate: initialValues?.expenseDate ?? format(new Date(), 'yyyy-MM-dd'),
+      description: initialValues?.description ?? '',
     },
   });
 
   const mutation = useMutation({
-    mutationFn: (data: FormData) =>
-      createExpenseApi({
+    mutationFn: (data: FormData) => {
+      const payload = {
         title: data.title,
         amount: Number(data.amount),
         category: selectedCategory ?? undefined,
         expenseDate: data.expenseDate + 'T00:00:00.000Z',
         description: data.description || undefined,
-      }),
+      };
+      return isEditing ? updateExpenseApi(expenseId, payload) : createExpenseApi(payload);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['expenses'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
-      Toast.show({ type: 'success', text1: 'Expense added', text2: 'Club expense has been recorded' });
+      Toast.show({ type: 'success', text1: isEditing ? 'Expense updated' : 'Expense added', text2: isEditing ? '' : 'Club expense has been recorded' });
       onSuccess();
     },
     onError: (err: any) => {
-      const msg = err?.response?.data?.message ?? 'Failed to add expense';
+      const msg = err?.response?.data?.message ?? (isEditing ? 'Failed to update expense' : 'Failed to add expense');
       Toast.show({ type: 'error', text1: 'Error', text2: msg });
     },
   });
@@ -94,7 +101,7 @@ export function AddExpenseScreen({ onBack, onSuccess }: AddExpenseScreenProps) {
         <TouchableOpacity onPress={onBack} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={22} color={theme.text.primary} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: theme.text.primary }]}>Add Expense</Text>
+        <Text style={[styles.headerTitle, { color: theme.text.primary }]}>{isEditing ? 'Edit Expense' : 'Add Expense'}</Text>
         <View style={styles.backBtn} />
       </View>
 
@@ -204,7 +211,7 @@ export function AddExpenseScreen({ onBack, onSuccess }: AddExpenseScreenProps) {
         />
 
         <Button
-          title="Add Expense"
+          title={isEditing ? 'Save Changes' : 'Add Expense'}
           fullWidth
           loading={mutation.isPending}
           onPress={handleSubmit((data) => mutation.mutate(data))}

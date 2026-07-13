@@ -27,7 +27,7 @@ export function BalanceCard({ totalCollection, totalExpenses, availableBalance }
         <View>
           <Text style={styles.balanceLabel}>Available Balance</Text>
           <Text style={styles.balanceAmount}>
-            ₹{availableBalance.toLocaleString('en-IN')}
+            ₹{(availableBalance ?? 0).toLocaleString('en-IN')}
           </Text>
           {isNegative && (
             <View style={styles.warningRow}>
@@ -49,7 +49,7 @@ export function BalanceCard({ totalCollection, totalExpenses, availableBalance }
             <Ionicons name="arrow-down-circle-outline" size={14} color="rgba(255,255,255,0.7)" />
             <Text style={styles.statLabelText}>Collection</Text>
           </View>
-          <Text style={styles.statValue}>₹{totalCollection.toLocaleString('en-IN')}</Text>
+          <Text style={styles.statValue}>₹{(totalCollection ?? 0).toLocaleString('en-IN')}</Text>
         </View>
 
         <View style={[styles.statDivider, { backgroundColor: 'rgba(255,255,255,0.2)' }]} />
@@ -59,7 +59,7 @@ export function BalanceCard({ totalCollection, totalExpenses, availableBalance }
             <Ionicons name="arrow-up-circle-outline" size={14} color="rgba(255,255,255,0.7)" />
             <Text style={styles.statLabelText}>Expenses</Text>
           </View>
-          <Text style={styles.statValue}>₹{totalExpenses.toLocaleString('en-IN')}</Text>
+          <Text style={styles.statValue}>₹{(totalExpenses ?? 0).toLocaleString('en-IN')}</Text>
         </View>
       </View>
     </LinearGradient>

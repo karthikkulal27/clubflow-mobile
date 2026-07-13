@@ -123,7 +123,7 @@ export function AdminDashboardScreen() {
             />
             <StatCard
               label="Collected"
-              value={`₹${dashboard.stats.totalCollection.toLocaleString('en-IN')}`}
+              value={`₹${(dashboard.stats.totalCollection ?? 0).toLocaleString('en-IN')}`}
               icon="cash-outline"
               iconColor={theme.success}
               iconBg={theme.successLight}

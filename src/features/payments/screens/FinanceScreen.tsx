@@ -77,9 +77,10 @@ interface FinanceScreenProps {
   onManagePricing?: () => void;
   onSpecialCollections?: () => void;
   onExpenses?: () => void;
+  onIncome?: () => void;
 }
 
-export function FinanceScreen({ onManagePricing, onSpecialCollections, onExpenses }: FinanceScreenProps) {
+export function FinanceScreen({ onManagePricing, onSpecialCollections, onExpenses, onIncome }: FinanceScreenProps) {
   const { theme } = useTheme();
   const { isAdmin } = useAuth();
   const now = new Date();
@@ -166,20 +167,35 @@ export function FinanceScreen({ onManagePricing, onSpecialCollections, onExpense
         onRefresh={handleRefresh}
         ListHeaderComponent={
           <>
-            {/* Expenses shortcut */}
-            {onExpenses && (
-              <TouchableOpacity
-                style={[styles.expensesShortcut, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}
-                onPress={onExpenses}
-                activeOpacity={0.75}
-              >
-                <View style={[styles.expensesIcon, { backgroundColor: theme.dangerLight }]}>
-                  <Ionicons name="receipt-outline" size={18} color={theme.danger} />
-                </View>
-                <Text style={[styles.expensesLabel, { color: theme.text.primary }]}>Club Expenses</Text>
-                <Ionicons name="chevron-forward" size={16} color={theme.text.tertiary} />
-              </TouchableOpacity>
-            )}
+            {/* Shortcuts row */}
+            <View style={styles.shortcutsRow}>
+              {/* Income shortcut */}
+              {onIncome && isAdmin && (
+                <TouchableOpacity
+                  style={[styles.shortcutBtn, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}
+                  onPress={onIncome}
+                  activeOpacity={0.75}
+                >
+                  <View style={[styles.shortcutIcon, { backgroundColor: theme.successLight }]}>
+                    <Ionicons name="trending-up-outline" size={18} color={theme.success} />
+                  </View>
+                  <Text style={[styles.shortcutLabel, { color: theme.text.primary }]}>Income</Text>
+                </TouchableOpacity>
+              )}
+              {/* Expenses shortcut */}
+              {onExpenses && isAdmin && (
+                <TouchableOpacity
+                  style={[styles.shortcutBtn, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}
+                  onPress={onExpenses}
+                  activeOpacity={0.75}
+                >
+                  <View style={[styles.shortcutIcon, { backgroundColor: theme.dangerLight }]}>
+                    <Ionicons name="receipt-outline" size={18} color={theme.danger} />
+                  </View>
+                  <Text style={[styles.shortcutLabel, { color: theme.text.primary }]}>Expenses</Text>
+                </TouchableOpacity>
+              )}
+            </View>
 
             {/* Balance Card */}
             {stats && (
@@ -191,7 +207,7 @@ export function FinanceScreen({ onManagePricing, onSpecialCollections, onExpense
               >
                 <Text style={styles.balanceLabel}>Available Balance</Text>
                 <Text style={styles.balanceAmount}>
-                  ₹{(stats.collectedAmount - 0).toLocaleString('en-IN')}
+                  ₹{(stats.availableBalance ?? stats.collectedAmount ?? 0).toLocaleString('en-IN')}
                 </Text>
                 <View style={styles.balanceRow}>
                   <View style={styles.balanceStat}>
@@ -202,9 +218,9 @@ export function FinanceScreen({ onManagePricing, onSpecialCollections, onExpense
                   </View>
                   <View style={styles.balanceDivider} />
                   <View style={styles.balanceStat}>
-                    <Text style={styles.balanceStatLabel}>Pending</Text>
+                    <Text style={styles.balanceStatLabel}>Expenses</Text>
                     <Text style={styles.balanceStatValue}>
-                      ₹{Number(stats.pendingAmount).toLocaleString('en-IN')}
+                      ₹{(Number(stats.totalExpenses) ?? 0).toLocaleString('en-IN')}
                     </Text>
                   </View>
                 </View>
@@ -424,16 +440,22 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   markPaidBtnText: { fontSize: fontSize.xs, fontWeight: fontWeight.semibold },
-  expensesShortcut: {
+  shortcutsRow: {
     flexDirection: 'row',
-    alignItems: 'center',
     gap: spacing[3],
-    marginHorizontal: spacing[5],
+    marginHorizontal: spacing[4],
     marginTop: spacing[4],
-    padding: spacing[4],
-    borderRadius: radius.xl,
+    marginBottom: spacing[2],
+  },
+  shortcutBtn: {
+    flex: 1,
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: spacing[2],
+    padding: spacing[3],
+    borderRadius: radius.lg,
     borderWidth: 1,
   },
-  expensesIcon: { width: 36, height: 36, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center' },
-  expensesLabel: { flex: 1, fontSize: fontSize.sm, fontWeight: fontWeight.semibold },
+  shortcutIcon: { width: 40, height: 40, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center' },
+  shortcutLabel: { fontSize: fontSize.xs, fontWeight: fontWeight.semibold, textAlign: 'center' },
 });

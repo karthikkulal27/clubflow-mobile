@@ -17,6 +17,8 @@ import { CreateSpecialCollectionScreen } from '../features/payments/screens/Crea
 import { SpecialCollectionDetailScreen } from '../features/payments/screens/SpecialCollectionDetailScreen';
 import { ExpensesListScreen } from '../features/expenses/screens/ExpensesListScreen';
 import { AddExpenseScreen } from '../features/expenses/screens/AddExpenseScreen';
+import { IncomeListScreen } from '../features/income/screens/IncomeListScreen';
+import { AddIncomeScreen } from '../features/income/screens/AddIncomeScreen';
 import { EventsListScreen } from '../features/events/screens/EventsListScreen';
 import { EventDetailScreen } from '../features/events/screens/EventDetailScreen';
 import { CreateEventScreen } from '../features/events/screens/CreateEventScreen';
@@ -100,6 +102,7 @@ function FinanceNavigator() {
         {({ navigation }) => (
           <FinanceScreen
             onExpenses={() => navigation.navigate('Expenses')}
+            onIncome={() => navigation.navigate('Income')}
             onManagePricing={() => navigation.navigate('DuesPlans')}
             onSpecialCollections={() => navigation.navigate('SpecialCollections')}
           />
@@ -176,6 +179,19 @@ function FinanceNavigator() {
             />
           );
         }}
+      </FinanceStack.Screen>
+      <FinanceStack.Screen name="Income">
+        {({ navigation }) => (
+          <IncomeListScreen
+            onBack={() => navigation.goBack()}
+            onAdd={() => navigation.navigate('AddIncome')}
+          />
+        )}
+      </FinanceStack.Screen>
+      <FinanceStack.Screen name="AddIncome">
+        {({ navigation }) => (
+          <AddIncomeScreen onBack={() => navigation.goBack()} onSuccess={() => navigation.goBack()} />
+        )}
       </FinanceStack.Screen>
     </FinanceStack.Navigator>
   );

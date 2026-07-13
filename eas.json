@@ -34,7 +34,7 @@
     "production": {
       "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://clubflow-production.up.railway.app/api/v1"
+        "EXPO_PUBLIC_API_URL": "https://api.clubflow.app/api/v1"
       },
       "android": {
         "buildType": "app-bundle"

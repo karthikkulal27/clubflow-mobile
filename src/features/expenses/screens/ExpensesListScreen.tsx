@@ -17,18 +17,18 @@ import { spacing, radius } from '../../../theme/spacing';
 import { format } from 'date-fns';
 import type { Expense } from '../../../types';
 
-const CATEGORY_COLORS: Record<string, string> = {
-  food: '#f59e0b',
-  ground: '#10b981',
-  equipment: '#3b82f6',
-  travel: '#8b5cf6',
-  trophy: '#ec4899',
-  event: '#f97316',
-};
-
-function getCategoryColor(category: string | null): string {
-  if (!category) return '#94a3b8';
-  return CATEGORY_COLORS[category.toLowerCase()] ?? '#6366f1';
+function getCategoryColor(category: string | null, theme: any): string {
+  if (!category) return theme.text.tertiary;
+  const cat = category.toLowerCase();
+  switch (cat) {
+    case 'food': return theme.warning;
+    case 'ground': return theme.success;
+    case 'equipment': return theme.primary;
+    case 'travel': return theme.warning;
+    case 'trophy': return theme.primary;
+    case 'event': return theme.warning;
+    default: return theme.primary;
+  }
 }
 
 function ExpenseCard({
@@ -43,7 +43,7 @@ function ExpenseCard({
   onEdit?: (item: Expense) => void;
 }) {
   const { theme } = useTheme();
-  const categoryColor = getCategoryColor(item.category);
+  const categoryColor = getCategoryColor(item.category, theme);
 
   return (
     <Card style={styles.card} padding={spacing[4]}>

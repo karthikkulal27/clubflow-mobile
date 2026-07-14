@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Alert, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Alert, TouchableOpacity, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNotificationCount } from '../../../hooks/useNotificationCount';
@@ -13,9 +13,12 @@ import { BalanceCard } from '../components/BalanceCard';
 import { PaymentStatusCard } from '../components/PaymentStatusCard';
 import { useDashboard } from '../hooks/useDashboard';
 import { usePayNow } from '../../payments/hooks/usePayments';
+import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../../../hooks/useAuth';
 import { useTheme } from '../../../hooks/useTheme';
 import { useAuthStore } from '../../../store/auth.store';
+import { useClubBrandingStore } from '../../../store/club-branding.store';
+import { getClubBrandingApi } from '../../club/api/club.api';
 import { fontSize, fontWeight } from '../../../theme/typography';
 import { spacing } from '../../../theme/spacing';
 import { format } from 'date-fns';
@@ -27,12 +30,28 @@ export function AdminDashboardScreen() {
   const { theme } = useTheme();
   const { user } = useAuth();
   const clearAuth = useAuthStore((s) => s.clearAuth);
+  const storedBranding = useClubBrandingStore((s) => s.branding);
+  const setBranding = useClubBrandingStore((s) => s.setBranding);
+  const { data: brandingData } = useQuery({
+    queryKey: ['club-branding'],
+    queryFn: getClubBrandingApi,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+  const branding = brandingData || storedBranding;
   const { data, isLoading, refetch, isRefetching } = useDashboard();
   const payNow = usePayNow();
   const navigation = useNavigation<any>();
   const unreadCount = useNotificationCount();
 
   const dashboard = data as AdminDashboard | undefined;
+
+  const handleRefresh = async () => {
+    // Refetch both dashboard and branding data
+    await refetch();
+    // Force refetch branding even if not stale
+    const branding = await getClubBrandingApi();
+    setBranding(branding);
+  };
 
   const handlePayNow = () => {
     const paymentId = dashboard?.currentDue?.id;
@@ -47,7 +66,7 @@ export function AdminDashboardScreen() {
   };
 
   return (
-    <ScreenWrapper refreshing={isRefetching} onRefresh={refetch}>
+    <ScreenWrapper refreshing={isRefetching} onRefresh={handleRefresh}>
       {/* Header */}
       <View style={styles.topBar}>
         <View>
@@ -83,6 +102,34 @@ export function AdminDashboardScreen() {
         </>
       ) : dashboard ? (
         <>
+          {/* Club Branding Section */}
+          {branding && branding.name && (
+            <View style={[styles.brandingCard, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}>
+              <View style={styles.brandingContent}>
+                {branding.logoUrl && (
+                  <View style={[styles.logoContainer, { backgroundColor: theme.primaryLight }]}>
+                    <Image
+                      source={{ uri: branding.logoUrl }}
+                      style={styles.clubLogo}
+                      resizeMode="contain"
+                    />
+                    <View style={[styles.logoBadge, { backgroundColor: theme.primary }]} />
+                  </View>
+                )}
+                <View style={styles.brandingTextContainer}>
+                  <Text style={[styles.clubName, { color: theme.text.primary }]}>{branding.name}</Text>
+                  {branding.slogan && (
+                    <Text style={[styles.clubSlogan, { color: theme.text.secondary }]}>{branding.slogan}</Text>
+                  )}
+                  <View style={styles.accentBars}>
+                    <View style={[styles.accentBar, { backgroundColor: theme.primary }]} />
+                    <View style={[styles.accentBar, { backgroundColor: theme.primary, opacity: 0.5 }]} />
+                  </View>
+                </View>
+              </View>
+            </View>
+          )}
+
           {/* Admin's own due */}
           <PaymentStatusCard currentDue={dashboard.currentDue} onPayNow={handlePayNow} />
 
@@ -236,4 +283,69 @@ const styles = StyleSheet.create({
   paymentName: { fontSize: fontSize.sm, fontWeight: fontWeight.medium },
   paymentDate: { fontSize: fontSize.xs },
   paymentAmount: { fontSize: fontSize.base, fontWeight: fontWeight.semibold },
+  brandingCard: {
+    borderRadius: 18,
+    padding: spacing[4],
+    marginBottom: spacing[5],
+    borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing[4],
+  },
+  brandingContent: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing[4],
+  },
+  logoContainer: {
+    width: 90,
+    height: 90,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: spacing[2],
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  clubLogo: {
+    width: '100%',
+    height: '100%',
+  },
+  logoBadge: {
+    position: 'absolute',
+    bottom: -6,
+    right: -6,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: 'white',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  brandingTextContainer: {
+    flex: 1,
+  },
+  clubName: {
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.bold,
+  },
+  clubSlogan: {
+    fontSize: fontSize.sm,
+    marginTop: spacing[1],
+    fontStyle: 'italic',
+  },
+  accentBars: {
+    flexDirection: 'row',
+    gap: spacing[2],
+    marginTop: spacing[2],
+  },
+  accentBar: {
+    height: 3,
+    borderRadius: 2,
+  },
 });

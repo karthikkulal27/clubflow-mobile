@@ -95,6 +95,9 @@ export interface PaymentStats {
   pendingCount: number;
   collectedAmount: number;
   pendingAmount: number;
+  totalIncome: number;
+  totalExpenses: number;
+  availableBalance: number;
 }
 
 export interface DuesPlanPeriod {

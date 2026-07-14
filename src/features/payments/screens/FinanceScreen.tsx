@@ -14,6 +14,8 @@ import { EmptyState } from '../../../components/ui/EmptyState';
 import { usePaymentsList, usePaymentStats, useMarkPaymentPaid } from '../hooks/usePayments';
 import { useAuth } from '../../../hooks/useAuth';
 import { useTheme } from '../../../hooks/useTheme';
+import { useClubBrandingStore } from '../../../store/club-branding.store';
+import { getClubBrandingApi } from '../../club/api/club.api';
 import { fontSize, fontWeight } from '../../../theme/typography';
 import { spacing, radius, shadow } from '../../../theme/spacing';
 import type { Payment } from '../../../types';
@@ -83,6 +85,7 @@ interface FinanceScreenProps {
 export function FinanceScreen({ onManagePricing, onSpecialCollections, onExpenses, onIncome }: FinanceScreenProps) {
   const { theme } = useTheme();
   const { isAdmin } = useAuth();
+  const setBranding = useClubBrandingStore((s) => s.setBranding);
   const now = new Date();
   const [month, setMonth] = useState(now.getMonth() + 1);
   const [year] = useState(now.getFullYear());
@@ -92,7 +95,17 @@ export function FinanceScreen({ onManagePricing, onSpecialCollections, onExpense
   const { data: stats, refetch: refetchStats } = usePaymentStats(month, year);
   const markPaid = useMarkPaymentPaid();
 
-  const handleRefresh = () => { refetch(); refetchStats(); };
+  const handleRefresh = async () => {
+    refetch();
+    refetchStats();
+    // Also refetch branding colors in case they changed on web dashboard
+    try {
+      const branding = await getClubBrandingApi();
+      setBranding(branding);
+    } catch (err) {
+      console.error('[FinanceScreen] Failed to refresh branding:', err);
+    }
+  };
 
   const paid = (payments?.data ?? []).filter((p) => p.status === 'PAID');
   const pending = (payments?.data ?? []).filter((p) => p.status === 'PENDING');
@@ -198,34 +211,38 @@ export function FinanceScreen({ onManagePricing, onSpecialCollections, onExpense
             </View>
 
             {/* Balance Card */}
-            {stats && (
-              <LinearGradient
-                colors={['#1d4ed8', '#2563eb', '#3b82f6']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.balanceCard}
-              >
-                <Text style={styles.balanceLabel}>Available Balance</Text>
-                <Text style={styles.balanceAmount}>
-                  ₹{(stats.availableBalance ?? stats.collectedAmount ?? 0).toLocaleString('en-IN')}
-                </Text>
-                <View style={styles.balanceRow}>
-                  <View style={styles.balanceStat}>
-                    <Text style={styles.balanceStatLabel}>Collected</Text>
-                    <Text style={styles.balanceStatValue}>
-                      ₹{Number(stats.collectedAmount).toLocaleString('en-IN')}
-                    </Text>
+            {stats && (() => {
+              const primaryColor = String(theme.clubPrimary || '#2563eb');
+              const secondaryColor = String(theme.clubSecondary || '#3b82f6');
+              return (
+                <LinearGradient
+                  colors={[primaryColor, primaryColor, secondaryColor]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.balanceCard}
+                >
+                  <Text style={styles.balanceLabel}>Available Balance</Text>
+                  <Text style={styles.balanceAmount}>
+                    ₹{(stats.availableBalance ?? stats.collectedAmount ?? 0).toLocaleString('en-IN')}
+                  </Text>
+                  <View style={styles.balanceRow}>
+                    <View style={styles.balanceStat}>
+                      <Text style={styles.balanceStatLabel}>Collected</Text>
+                      <Text style={styles.balanceStatValue}>
+                        ₹{Number(stats.collectedAmount).toLocaleString('en-IN')}
+                      </Text>
+                    </View>
+                    <View style={styles.balanceDivider} />
+                    <View style={styles.balanceStat}>
+                      <Text style={styles.balanceStatLabel}>Expenses</Text>
+                      <Text style={styles.balanceStatValue}>
+                        ₹{(Number(stats.totalExpenses) ?? 0).toLocaleString('en-IN')}
+                      </Text>
+                    </View>
                   </View>
-                  <View style={styles.balanceDivider} />
-                  <View style={styles.balanceStat}>
-                    <Text style={styles.balanceStatLabel}>Expenses</Text>
-                    <Text style={styles.balanceStatValue}>
-                      ₹{(Number(stats.totalExpenses) ?? 0).toLocaleString('en-IN')}
-                    </Text>
-                  </View>
-                </View>
-              </LinearGradient>
-            )}
+                </LinearGradient>
+              );
+            })()}
 
             {/* Month Selector */}
             <View style={[styles.monthSelector, { backgroundColor: theme.surface }]}>

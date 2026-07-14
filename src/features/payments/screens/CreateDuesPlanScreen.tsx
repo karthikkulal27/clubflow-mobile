@@ -242,7 +242,7 @@ export function CreateDuesPlanScreen({ onBack, onSuccess }: CreateDuesPlanScreen
                   onPress={() => toggleMonth(month)}
                   activeOpacity={0.75}
                 >
-                  <Text style={[styles.monthChipText, { color: active ? '#fff' : theme.text.secondary }]}>
+                  <Text style={[styles.monthChipText, { color: active ? theme.text.inverse : theme.text.secondary }]}>
                     {label}
                   </Text>
                 </TouchableOpacity>
@@ -278,8 +278,8 @@ export function CreateDuesPlanScreen({ onBack, onSuccess }: CreateDuesPlanScreen
         )}
 
         {hasPastMonths && (
-          <View style={[styles.pastWarning, { backgroundColor: '#fef3c7', borderColor: '#f59e0b' }]}>
-            <Ionicons name="warning-outline" size={16} color="#f59e0b" />
+          <View style={[styles.pastWarning, { backgroundColor: theme.warningLight, borderColor: theme.warning }]}>
+            <Ionicons name="warning-outline" size={16} color={theme.warning} />
             <Text style={styles.pastWarningText}>
               Past months selected — dues will be generated immediately for all active members.
             </Text>

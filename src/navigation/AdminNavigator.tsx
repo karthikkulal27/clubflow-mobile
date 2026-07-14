@@ -29,6 +29,7 @@ import { MoreScreen } from '../features/dashboard/screens/MoreScreen';
 import { ProfileScreen } from '../features/profile/screens/ProfileScreen';
 import { ClubSettingsScreen } from '../features/club/screens/ClubSettingsScreen';
 import { useTheme } from '../hooks/useTheme';
+import { useClubBrandingStore } from '../store/club-branding.store';
 import { fontSize, fontWeight } from '../theme/typography';
 import type { AdminTabParamList } from '../types';
 
@@ -312,13 +313,17 @@ function MoreNavigator() {
 
 export function AdminNavigator() {
   const { theme } = useTheme();
+  const branding = useClubBrandingStore((s) => s.branding);
   const insets = useSafeAreaInsets();
+
+  // Use custom primary color if branding is set, otherwise use default
+  const tabBarActiveTintColor = branding?.primaryColor || theme.tabBarActive;
 
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarActiveTintColor: theme.tabBarActive,
+        tabBarActiveTintColor: tabBarActiveTintColor,
         tabBarInactiveTintColor: theme.tabBarInactive,
         tabBarStyle: {
           backgroundColor: theme.tabBar,

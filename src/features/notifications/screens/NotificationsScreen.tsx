@@ -12,26 +12,26 @@ import {
   markAllReadApi,
   markReadApi,
 } from '../api/notifications.api';
-import { useTheme } from '../../../hooks/useTheme';
 import { fontSize, fontWeight } from '../../../theme/typography';
 import { spacing, radius } from '../../../theme/spacing';
 import { formatDistanceToNow, isToday, isYesterday, isThisWeek } from 'date-fns';
 import type { AppNotification, NotificationType } from '../../../types';
+import { useTheme } from '../../../hooks/useTheme';
 
-function notificationMeta(type: NotificationType): {
+function getNotificationMeta(type: NotificationType, theme: any): {
   icon: keyof typeof Ionicons.glyphMap;
   color: string;
   bgKey: 'primaryLight' | 'warningLight' | 'successLight' | 'dangerLight';
 } {
   switch (type) {
-    case 'PAYMENT_DUE': return { icon: 'time-outline', color: '#f59e0b', bgKey: 'warningLight' };
-    case 'PAYMENT_SUCCESS': return { icon: 'checkmark-circle-outline', color: '#10b981', bgKey: 'successLight' };
-    case 'NEW_ANNOUNCEMENT': return { icon: 'megaphone-outline', color: '#f59e0b', bgKey: 'warningLight' };
-    case 'NEW_EVENT': return { icon: 'calendar-outline', color: '#3b82f6', bgKey: 'primaryLight' };
-    case 'EVENT_REMINDER': return { icon: 'alarm-outline', color: '#f97316', bgKey: 'warningLight' };
-    case 'EXPENSE_ADDED': return { icon: 'receipt-outline', color: '#ef4444', bgKey: 'dangerLight' };
-    case 'EVENT_RSVP': return { icon: 'people-outline', color: '#3b82f6', bgKey: 'primaryLight' };
-    default: return { icon: 'notifications-outline', color: '#3b82f6', bgKey: 'primaryLight' };
+    case 'PAYMENT_DUE': return { icon: 'time-outline', color: theme.warning, bgKey: 'warningLight' };
+    case 'PAYMENT_SUCCESS': return { icon: 'checkmark-circle-outline', color: theme.success, bgKey: 'successLight' };
+    case 'NEW_ANNOUNCEMENT': return { icon: 'megaphone-outline', color: theme.warning, bgKey: 'warningLight' };
+    case 'NEW_EVENT': return { icon: 'calendar-outline', color: theme.primary, bgKey: 'primaryLight' };
+    case 'EVENT_REMINDER': return { icon: 'alarm-outline', color: theme.warning, bgKey: 'warningLight' };
+    case 'EXPENSE_ADDED': return { icon: 'receipt-outline', color: theme.danger, bgKey: 'dangerLight' };
+    case 'EVENT_RSVP': return { icon: 'people-outline', color: theme.primary, bgKey: 'primaryLight' };
+    default: return { icon: 'notifications-outline', color: theme.primary, bgKey: 'primaryLight' };
   }
 }
 
@@ -43,7 +43,7 @@ function NotificationRow({
   onRead: (id: string) => void;
 }) {
   const { theme } = useTheme();
-  const meta = notificationMeta(item.type);
+  const meta = getNotificationMeta(item.type, theme);
   const bgColor = theme[meta.bgKey];
 
   return (

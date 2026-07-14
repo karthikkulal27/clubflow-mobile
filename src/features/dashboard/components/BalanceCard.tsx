@@ -15,10 +15,14 @@ interface BalanceCardProps {
 export function BalanceCard({ totalCollection, totalExpenses, availableBalance }: BalanceCardProps) {
   const { theme } = useTheme();
   const isNegative = availableBalance < 0;
+   const primaryColor = String(theme.clubPrimary || '#2563eb');
+  const secondaryColor = String(theme.clubSecondary || '#3b82f6');
+
+  console.log("theme",primaryColor,secondaryColor,"-------------------------------------");
 
   return (
     <LinearGradient
-      colors={isNegative ? ['#b91c1c', '#dc2626', '#ef4444'] : ['#1d4ed8', '#2563eb', '#3b82f6']}
+      colors={isNegative ? ['#b91c1c', '#dc2626', '#ef4444'] : [primaryColor, primaryColor, secondaryColor]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.card}

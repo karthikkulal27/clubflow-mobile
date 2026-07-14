@@ -31,11 +31,11 @@ function PaymentRow({ payment, theme }: { payment: Payment; theme: any }) {
 
   return (
     <View style={[styles.row, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-      <View style={[styles.rowIcon, { backgroundColor: isSpecial ? '#fef3c7' : theme.primaryLight }]}>
+      <View style={[styles.rowIcon, { backgroundColor: isSpecial ? theme.warningLight : theme.primaryLight }]}>
         <Ionicons
           name={isSpecial ? 'gift-outline' : 'calendar-outline'}
           size={18}
-          color={isSpecial ? '#f59e0b' : theme.primary}
+          color={isSpecial ? theme.warning : theme.primary}
         />
       </View>
       <View style={styles.rowContent}>

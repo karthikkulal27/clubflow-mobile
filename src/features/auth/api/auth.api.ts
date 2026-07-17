@@ -9,3 +9,7 @@ export async function loginApi(phone: string, password: string): Promise<LoginRe
 export async function logoutApi(refreshToken: string): Promise<void> {
   await api.post('/auth/logout', { refreshToken });
 }
+
+export async function changePasswordApi(oldPassword: string, newPassword: string): Promise<void> {
+  await api.post('/auth/change-password', { oldPassword, newPassword });
+}

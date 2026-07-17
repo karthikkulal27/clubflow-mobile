@@ -24,6 +24,7 @@ import { fontSize, fontWeight } from '../../../theme/typography';
 import { spacing, radius } from '../../../theme/spacing';
 import { getClubApi } from '../../club/api/club.api';
 import { format } from 'date-fns';
+import { ChangePasswordModal } from '../components/ChangePasswordModal';
 
 interface ProfileScreenProps {
   onBack: () => void;
@@ -100,6 +101,7 @@ export function ProfileScreen({ onBack }: ProfileScreenProps) {
   const { user, isAdmin } = useAuth();
   const clearAuth = useAuthStore((s) => s.clearAuth);
   const [editMode, setEditMode] = useState(false);
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
 
   const { data: memberProfile, refetch: refetchProfile } = useMember(user?.id ?? '');
   const updateProfile = useUpdateOwnProfile();
@@ -310,7 +312,7 @@ export function ProfileScreen({ onBack }: ProfileScreenProps) {
               name="newPassword"
               render={({ field: { value, onChange, onBlur } }) => (
                 <Input label="New Password (optional)" value={value} onChangeText={onChange} onBlur={onBlur}
-                  secureTextEntry leftIcon="lock-closed-outline" placeholder="Leave blank to keep current"
+                  isPassword leftIcon="lock-closed-outline" placeholder="Leave blank to keep current"
                   error={errors.newPassword?.message} />
               )}
             />
@@ -319,7 +321,7 @@ export function ProfileScreen({ onBack }: ProfileScreenProps) {
               name="confirmPassword"
               render={({ field: { value, onChange, onBlur } }) => (
                 <Input label="Confirm Password" value={value} onChangeText={onChange} onBlur={onBlur}
-                  secureTextEntry leftIcon="lock-closed-outline" placeholder="Repeat new password"
+                  isPassword leftIcon="lock-closed-outline" placeholder="Repeat new password"
                   error={errors.confirmPassword?.message} />
               )}
             />
@@ -347,6 +349,21 @@ export function ProfileScreen({ onBack }: ProfileScreenProps) {
               <InfoRow icon="shield-outline" label="Role" value={isAdmin ? 'Club Administrator' : 'Club Member'} />
             </Card>
 
+            <TouchableOpacity
+              onPress={() => setShowChangePasswordModal(true)}
+              style={[styles.securityCard, { backgroundColor: theme.dangerLight, borderColor: theme.danger }]}
+              activeOpacity={0.8}
+            >
+              <View style={[styles.securityIcon, { backgroundColor: theme.danger }]}>
+                <Ionicons name="lock-closed-outline" size={20} color="white" />
+              </View>
+              <View style={styles.securityContent}>
+                <Text style={[styles.securityTitle, { color: theme.danger }]}>Change Password</Text>
+                <Text style={[styles.securitySubtitle, { color: theme.danger }]}>Update your password for security</Text>
+              </View>
+              <Ionicons name="chevron-forward-outline" size={20} color={theme.danger} />
+            </TouchableOpacity>
+
             {club && (
               <Card padding={0}>
                 <Text style={[styles.cardTitle, { color: theme.text.secondary }]}>Club Details</Text>
@@ -372,6 +389,11 @@ export function ProfileScreen({ onBack }: ProfileScreenProps) {
           </>
         )}
       </ScrollView>
+
+      <ChangePasswordModal
+        visible={showChangePasswordModal}
+        onClose={() => setShowChangePasswordModal(false)}
+      />
     </KeyboardAvoidingView>
   );
 }
@@ -444,6 +466,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   bgChipText: { fontSize: fontSize.sm, fontWeight: fontWeight.semibold },
+  securityCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: spacing[4],
+    paddingHorizontal: spacing[4],
+    borderRadius: radius.xl,
+    borderWidth: 1,
+    gap: spacing[3],
+  },
+  securityIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: radius.lg,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  securityContent: { flex: 1 },
+  securityTitle: { fontSize: fontSize.base, fontWeight: fontWeight.semibold },
+  securitySubtitle: { fontSize: fontSize.xs, marginTop: spacing[1] },
   signOutBtn: {
     flexDirection: 'row',
     alignItems: 'center',
